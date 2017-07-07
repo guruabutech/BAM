@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="time_array">
+        <item>1 Hour</item>
+        <item>2 Hours</item>
+        <item>3 Hours</item>
+        <item>4 Hours</item>
+        <item>5 Hours</item>
+        <item>6 Hours</item>
+        <item>7 Hours</item>
+        <item>8 Hours</item>
+    </string-array>
+    <string-array name="radius_array">
+        <item>Event Radius</item>
+        <item>10 meters</item>
+        <item>15 meters</item>
+        <item>20 meters</item>
+        <item>40 meters</item>
+        <item>50 meters</item>
+    </string-array>
+</resources>

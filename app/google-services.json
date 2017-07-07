@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "778061781393",
+    "firebase_url": "https://bioam-2c35f.firebaseio.com",
+    "project_id": "bioam-2c35f",
+    "storage_bucket": "bioam-2c35f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778061781393:android:a5e2f49346c53d00",
+        "android_client_info": {
+          "package_name": "crescentcitydevelopment.com.bam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "778061781393-mev1gmv86sn1pg0h0atspvk93emep36t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "crescentcitydevelopment.com.bam",
+            "certificate_hash": "9672d34157f5b7cace424b866dd72159e879eb03"
+          }
+        },
+        {
+          "client_id": "778061781393-oci65il70pjvdpg90tctoub350na6s01.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrL8CveUXvCl1rqzKZDJP1F7MuZxudQ3U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "778061781393-oci65il70pjvdpg90tctoub350na6s01.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
