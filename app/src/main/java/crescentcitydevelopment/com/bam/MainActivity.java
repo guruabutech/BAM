@@ -12,6 +12,7 @@ import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +29,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
     Typeface script;
     public static final String ANONYMOUS = "anonymous";
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         mUserName = ANONYMOUS;
         mFirebaseAuth = FirebaseAuth.getInstance();
         signInButton = (SignInButton) findViewById(R.id.signInButton);
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume(){
+    //    Log.v("ON RESUME---","---ON RESUME");
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
         cardIn();
         super.onResume();
@@ -132,7 +134,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause(){
         super.onPause();
         cardOut();
+        //Log.v("ON PAUSE---","---ON PAUSE");
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+    @Override
+    protected void onStop(){
+        super.onStop();
+       // Log.v("ON STOP---","---ON STOP");
     }
 }
 

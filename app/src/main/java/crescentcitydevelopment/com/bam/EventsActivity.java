@@ -45,6 +45,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +54,8 @@ import java.util.Locale;
 
 
 public class EventsActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ChildEventListener {
+    private String savedState = "savedDbQueryString";
+    private Boolean savedDbQuery = false;
     private static final int REQUEST_CHECK_SETTINGS = 1;
     private int mLocationStatus;
     private final String LOG_TAG = "BAM TAG";
@@ -65,6 +69,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private double mLat;
+    Menu menu;
+    MenuItem publicMenuItem, privateMenuItem;
     private double mLng;
     private String mUserId;
     List<Event> mEvents;
@@ -78,6 +84,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(savedState)){
+                savedDbQuery = savedInstanceState.getBoolean(savedState);
+            }
+        }
         setContentView(R.layout.activity_event);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -158,14 +169,19 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 }
             }
         });
-        mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
-        mEventDatabaseReference.addChildEventListener(this);
+
+        queryPrivateEvents(savedDbQuery);
+
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        this.menu = menu;
+        publicMenuItem = menu.findItem(R.id.action_public_invites);
+        privateMenuItem = menu.findItem(R.id.action_private_invites);
         return true;
     }
 
@@ -179,6 +195,30 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_sign_out) {
             AuthUI.getInstance().signOut(this);
+            return true;
+        }
+        if(id == R.id.action_public_invites){
+            savedDbQuery = false;
+            if(!privateMenuItem.isVisible()) {
+                privateMenuItem.setVisible(true);
+            }
+            if(publicMenuItem.isVisible()){
+                publicMenuItem.setVisible(false);
+            }
+            mEventAdapter.clear();
+           queryPrivateEvents(false);
+            return true;
+        }
+        if(id == R.id.action_private_invites){
+                savedDbQuery = true;
+            if(!publicMenuItem.isVisible()) {
+                publicMenuItem.setVisible(true);
+            }
+            if(privateMenuItem.isVisible()){
+                privateMenuItem.setVisible(false);
+            }
+            mEventAdapter.clear();
+            queryPrivateEvents(true);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -212,6 +252,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mLocationStatus = 777;
         super.onStop();
 
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(savedState, savedDbQuery);
     }
 
     @Override
@@ -300,6 +345,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        Log.v(LOG_TAG, "CHILD ADDED");
+
         Event newEvent = dataSnapshot.getValue(Event.class);
         newEvent.setKey(dataSnapshot.getKey());
         attendeeCount = newEvent.getAttendees().size();
@@ -313,11 +360,13 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+        Log.w(LOG_TAG, "CHILD CHANGED");
         mEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
+        Log.w(LOG_TAG, "CHILD REMOVED");
 
         for (Event events : mEvents) {
             if (events.getKey().toString().equals(dataSnapshot.getKey().toString())) {
@@ -336,7 +385,15 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+        Log.w(LOG_TAG, "CHILD MOVED");
+
         mEventAdapter.notifyDataSetChanged();
+    }
+
+    private void queryPrivateEvents(Boolean privateEvent){
+        mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
+        Query eventPrivate = mEventDatabaseReference.orderByChild("privateEvent").equalTo(privateEvent);
+        eventPrivate.addChildEventListener(this);
     }
 
     @Override

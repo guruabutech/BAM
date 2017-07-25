@@ -2,13 +2,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_cancel"
+        android:id="@+id/action_private"
         android:orderInCategory="100"
+        android:title="Private"
+        android:icon="@drawable/private_icon"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_cancel"
+        android:orderInCategory="200"
         android:title="CANCEL"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_save"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:title="START"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_public_event"
+        android:orderInCategory="400"
+        android:title="Public Event"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_private_event"
+        android:orderInCategory="500"
+        android:title="Private Event"
+        app:showAsAction="never" />
 </menu>

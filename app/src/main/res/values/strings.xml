@@ -8,7 +8,8 @@
     <string name="new_event_label">NEW EVENT</string>
     <string name="title_activity_event_detail">EventDetailActivity</string>
     <string name="action_sign_out">Sign Out</string>
-
+    <string name="public_invite">Public Invites</string>
+    <string name="private_invite">Private Invites</string>
 
     
     <string name="path_attend">M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM6,10L6,7L4,7v3L1,10v2h3v3h2v-3h3v-2L6,10zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z</string>
@@ -27,13 +28,9 @@
 
     <string name="fingerprint_not_recognized">Fingerprint not recognized. Try again</string>
     <string name="fingerprint_success">Fingerprint recognized</string>
-    <string name="item_title">White Mesh Pluto Backpack</string>
-    <string name="item_price">$62.68</string>
-    <string name="item_description">Mesh backpack in white. Black textile trim throughout.</string>
     <string name="new_fingerprint_enrolled_description">A new fingerprint was added to this device, so your password is required.</string>
     <string name="use_fingerprint_in_future">Use fingerprint in the future</string>
     <string name="use_fingerprint_to_authenticate_title">Use fingerprint to authenticate</string>
     <string name="use_fingerprint_to_authenticate_key" >use_fingerprint_to_authenticate_key</string>
-    <string name="description_bugdroid_icon">Android bugdroid image</string>
     <string name="description_fingerprint_icon">Fingerprint icon</string>
 </resources>

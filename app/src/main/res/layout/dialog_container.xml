@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="crescentcitydevelopment.com.bam.EventsActivity"
-    android:background="@color/colorWhite">
+    android:background="@color/colorWhite"
+    android:id="@+id/addEventLayout">
     <include layout="@layout/dialog_event" />
     </android.support.design.widget.CoordinatorLayout>

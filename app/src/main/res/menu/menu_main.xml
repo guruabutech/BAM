@@ -4,6 +4,19 @@
     tools:context="crescentcitydevelopment.com.bam.MainActivity">
     <item
         android:id="@+id/action_sign_out"
-        android:orderInCategory="100"
+        android:orderInCategory="300"
         android:title="@string/action_sign_out"/>
+    <item
+        android:id="@+id/action_public_invites"
+        android:orderInCategory="100"
+        android:visible="false"
+        app:showAsAction="never"
+        android:title="@string/public_invite"/>
+    <item
+        android:id="@+id/action_private_invites"
+        android:orderInCategory="200"
+        android:visible="true"
+        app:showAsAction="never"
+        android:title="@string/private_invite"/>
+
 </menu>

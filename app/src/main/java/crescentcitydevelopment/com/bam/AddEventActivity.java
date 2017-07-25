@@ -3,13 +3,12 @@ package crescentcitydevelopment.com.bam;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -30,7 +28,6 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -52,34 +49,31 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     private final String LOG_TAG = "BAM TAG";
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEventDatabaseReference;
-    private EditText eventName;
-    private EditText eventDesc;
+    private String lat, lng, mUsername, mUserEmail, mUserId;
+    private Menu menu;
+    private MenuItem invite;
+    private EditText eventName, eventDesc;
     private int mSelectedHours;
-    private LatLng mPlacePickerLatLng;
+    private LatLng mPlacePickerLatLng, pickerCurrentLocation;
     private int mSelectedRadius= 50;
-    private Spinner eventTimeSpinner;
-    private Spinner eventRadiusSpinner;
+    private Spinner eventTimeSpinner, eventRadiusSpinner;
     private TextView mAddEventLocationView;
-    GoogleMap mAddEventMap;
+    private GoogleMap mAddEventMap;
     boolean mapReady = false;
     private GoogleApiClient mGoogleApiClient;
-   // private LocationRequest mLocationRequest;
-    private double mLat;
-    private double mLng;
-    private String lat;
-    private String lng;
+    private double mLat, mLng;
+    private boolean privateEvent = false;
     private LinearLayout locationLayout;
+    private List<User> mPrivateInvites;
     int PLACE_PICKER_REQUEST = 1;
-    private LatLng pickerCurrentLocation;
-    private String mUsername;
-    private String mUserEmail;
-    private String mUserId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_container);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
+        mPrivateInvites = new ArrayList<>();
         setSupportActionBar(toolbar);
         Intent intent = getIntent();
         Bundle bd = intent.getExtras();
@@ -235,6 +229,9 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.event_menu, menu);
+        this.menu = menu;
+        invite = menu.findItem(R.id.action_private);
+
         return true;
     }
 
@@ -244,6 +241,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_cancel) {
@@ -264,11 +262,31 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
             } else {
                 List<User>attendees = new ArrayList<>();
                 User attendee1 = new User(mUsername, mUserEmail, mUserId);
-
+                mPrivateInvites.add(attendee1);
                 attendees.add(attendee1);
-                Event event = new Event(eventName.getText().toString(), eventDesc.getText().toString(),mLat, mLng, mSelectedHours, mSelectedRadius, attendees, attendee1);
+                Event event = new Event(eventName.getText().toString(), eventDesc.getText().toString(),mLat, mLng, mSelectedHours, mSelectedRadius, attendees, attendee1, privateEvent, mPrivateInvites);
                 mEventDatabaseReference.push().setValue(event);
                 finish();
+            }
+            return true;
+        }
+        if(id == R.id.action_private){
+
+            Snackbar.make(findViewById(R.id.addEventLayout), "Event Status: Private", Snackbar.LENGTH_LONG).show();
+            return true;
+        }
+        if(id == R.id.action_private_event){
+            privateEvent = true;
+           if(!invite.isVisible()){
+               invite.setVisible(true);
+           }
+            //menu.findItem(R.id.action_invite).setVisible(true);
+            return true;
+        }
+        if(id == R.id.action_public_event){
+            privateEvent = false;
+            if(invite.isVisible()){
+                invite.setVisible(false);
             }
             return true;
         }
