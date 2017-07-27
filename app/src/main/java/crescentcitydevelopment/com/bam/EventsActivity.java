@@ -110,7 +110,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                     finish();
                 } else {
                     mUserName = user.getDisplayName();
-                    mUserEmail = user.getEmail();
+                    mUserEmail = user.getEmail().toLowerCase();
                     mUserId = user.getUid();
 
                 }
@@ -137,7 +137,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                         .putExtra("userEmail", mUserEmail)
                         .putExtra("userId", mUserId)
                         .putExtra("eventName",event.getEventName());
-
                         startActivity(intent);
             }
         });
@@ -169,10 +168,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 }
             }
         });
-
         queryPrivateEvents(savedDbQuery);
-
-
     }
 
     @Override
@@ -265,7 +261,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(1000);
-        //Log.v(LOG_TAG, "CONNECTED-----------CONNECTED");
         configureLocation();
 
     }
@@ -345,13 +340,23 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-        Log.v(LOG_TAG, "CHILD ADDED");
+       // Log.v(LOG_TAG, "CHILD ADDED");
 
         Event newEvent = dataSnapshot.getValue(Event.class);
         newEvent.setKey(dataSnapshot.getKey());
+        if(savedDbQuery && newEvent.getPrivateEvent()){
+
+            for(User user : newEvent.getPrivateInvites()){
+                if(mUserEmail.equals(user.getEmailAddress().toLowerCase())){
+
+                    mEventAdapter.add(newEvent);
+                }
+            }
+        }else {
+            mEventAdapter.add(newEvent);
+        }
         attendeeCount = newEvent.getAttendees().size();
         progressBar.setVisibility(View.GONE);
-        mEventAdapter.add(newEvent);
         if (mEventAdapter.getCount() == 0) {
             progressBar.setVisibility(View.GONE);
             mEventListView.setEmptyView(mNoEvents);
@@ -360,13 +365,13 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        Log.w(LOG_TAG, "CHILD CHANGED");
+        //Log.w(LOG_TAG, "CHILD CHANGED");
         mEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Log.w(LOG_TAG, "CHILD REMOVED");
+        //Log.w(LOG_TAG, "CHILD REMOVED");
 
         for (Event events : mEvents) {
             if (events.getKey().toString().equals(dataSnapshot.getKey().toString())) {
@@ -385,7 +390,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-        Log.w(LOG_TAG, "CHILD MOVED");
+        //Log.w(LOG_TAG, "CHILD MOVED");
 
         mEventAdapter.notifyDataSetChanged();
     }
@@ -415,7 +420,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.v(LOG_TAG, "PERMISSION RESULTS---");
+        //Log.v(LOG_TAG, "PERMISSION RESULTS---");
 
         if (requestCode == REQUEST_LOCATION) {
             if (grantResults.length == 1

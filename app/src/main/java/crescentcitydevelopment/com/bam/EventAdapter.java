@@ -28,8 +28,8 @@ public class EventAdapter extends ArrayAdapter<Event> {
         eventAdminName.setText(event.getAdmin().getUserName());
         eventNameView.setText(event.getEventName());
         eventDescriptionView.setText(event.getEventDescription());
-        String eventPublic = "Event Status: Public";
-        String eventPrivate = "Event Status: Private";
+        String eventPublic = "Public Event";
+        String eventPrivate = "Private Event";
         if(event.getPrivateEvent()){
             eventStatus.setText(eventPrivate);
         }else{
