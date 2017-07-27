@@ -7,20 +7,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.preference.PreferenceManager;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.util.Log;
@@ -28,7 +25,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,7 +39,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -68,10 +64,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import static crescentcitydevelopment.com.bam.R.id.attendeeList;
-import static crescentcitydevelopment.com.bam.R.id.backArrowIcon;
-
-public class EventDetailActivity extends AppCompatActivity implements OnMapReadyCallback, ChildEventListener{
+public class EventDetailActivity extends AppCompatActivity implements OnMapReadyCallback, ChildEventListener, InviteDialogFragment.InviteDialogListener{
     GoogleMap mAddEventMap;
     boolean mapReady = false;
     TextView eventDescriptionView;
@@ -100,8 +93,9 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     private String mUserEmail;
     private String mUserId;
     private String mEventDesc;
-    private List<User> mAttendeeList;
+    private List<User> mAttendeeList, mInvitedUsersList;
     private String[] mAttendeeNameArray;
+    private String[] mInvitedUsersArray;
     private FloatingActionButton fab;
     private ImageView backIcon;
     private ImageView deleteIcon;
@@ -141,6 +135,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         Bundle bd =intent.getExtras();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mAttendeeList = new ArrayList<>();
+        mInvitedUsersList = new ArrayList<>();
         if(bd != null) {
             mKey = (String) bd.get("key");
             Log.v("KEY",mKey);
@@ -194,7 +189,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         mAttendeeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                   showAttendees();
+                   showAttendeesDialog();
             }
         });
         mLocationLayout.setOnClickListener(new View.OnClickListener() {
@@ -249,9 +244,10 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
-             fab.setOnClickListener(
-                    new AttendeeButtonListener(cipherNotInvalidated,
-                            KEY_NAME_NOT_INVALIDATED));
+                fab.setOnClickListener(
+                        new AttendeeButtonListener(cipherNotInvalidated,
+                                KEY_NAME_NOT_INVALIDATED));
+
         } else {
             // Hide the purchase button which uses a non-invalidated key
             // if the app doesn't work on Android N preview
@@ -284,8 +280,9 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         createKey(DEFAULT_KEY_NAME, true);
         createKey(KEY_NAME_NOT_INVALIDATED, false);
         //purchaseButton.setEnabled(true);
-        fab.setOnClickListener(
-                new AttendeeButtonListener(defaultCipher, DEFAULT_KEY_NAME));
+
+            fab.setOnClickListener(
+                    new AttendeeButtonListener(defaultCipher, DEFAULT_KEY_NAME));
     }
 
     @Override
@@ -338,7 +335,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 .create();
         infoDialog.show();
     }
-    public Dialog showAttendees() {
+    public Dialog showAttendeesDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("EVENT ATTENDEES")
@@ -349,6 +346,32 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                     }
                 })
                 .setItems(mAttendeeNameArray, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+        return builder.show();
+    }
+    public Dialog showInvitedUsersDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("INVITE USERS")
+                .setNegativeButton("DISMISS", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setPositiveButton("Add User", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        DialogFragment inviteDialog = new InviteDialogFragment();
+                        inviteDialog.show(getSupportFragmentManager(), "InviteDialogFragment");
+                    }
+                })
+                .setItems(mInvitedUsersArray, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
@@ -369,11 +392,8 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             mAdminName  = dataSnapshot.child("userName").getValue().toString();
            mAdminEmail = dataSnapshot.child("emailAddress").getValue().toString();
         }
-        if(isAdmin(mAdminEmail)){
-            fab.setVisibility(View.INVISIBLE);
-        }else{
-            deleteIcon.setVisibility(View.INVISIBLE);
-        }
+
+
         if(dataSnapshot.getKey().equals("eventHours")){
             mDuration = dataSnapshot.getValue().toString();
             Log.v("DURATION SNAPSHOT", dataSnapshot.toString());
@@ -394,10 +414,28 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 mAttendeeNameArray[i] = attendeeName;
             }
             eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
-
         }
-        if(isPresent(mCurrentUser)){
+        if(dataSnapshot.getKey().equals("privateInvites")){
+            Long.toString(dataSnapshot.getChildrenCount());
+            int childCount = (int) dataSnapshot.getChildrenCount();
+            mInvitedUsersArray = new String[childCount];
+            for(int i = 0; i < dataSnapshot.getChildrenCount(); i++ )
+            {
+                String inviteNumber = Integer.toString(i);
+              //  String inviteeName =dataSnapshot.child(inviteNumber).child("userName").getValue().toString();
+                String inviteeEmail =dataSnapshot.child(inviteNumber).child("emailAddress").getValue().toString();
+              //  String inviteeUserId =dataSnapshot.child(inviteNumber).child("userId").getValue().toString();
+                User invitees = new User("Invited User", inviteeEmail, "UserId");
+                mInvitedUsersList.add(invitees);
+                mInvitedUsersArray[i] = inviteeEmail;
+            }
+          //  eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
+        }
+        if(isPresent(mCurrentUser) && !isAdmin(mAdminEmail)){
             fab.setVisibility(View.INVISIBLE);
+        }
+        if(!isAdmin(mAdminEmail)){
+            deleteIcon.setVisibility(View.INVISIBLE);
         }
     }
     @Override
@@ -416,6 +454,20 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             }
                 eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
         }
+        if(dataSnapshot.getKey().equals("privateInvites")){
+            int childCount = (int) dataSnapshot.getChildrenCount();
+            mInvitedUsersArray = new String[childCount];
+            for(int i = 0; i < dataSnapshot.getChildrenCount(); i++ )
+            {
+                String attendeeNumber = Integer.toString(i);
+                //String attendeeName =dataSnapshot.child(attendeeNumber).child("userName").getValue().toString();
+                String attendeeEmail =dataSnapshot.child(attendeeNumber).child("emailAddress").getValue().toString();
+                //String attendeeUserId =dataSnapshot.child(attendeeNumber).child("userId").getValue().toString();
+                mInvitedUsersArray[i] = attendeeEmail;
+            }
+
+        }
+
 
     }
 
@@ -547,6 +599,24 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        Toast.makeText(this, "POSITIVE", Toast.LENGTH_SHORT).show();
+        EditText email = (EditText) dialog.getDialog().findViewById(R.id.inviteeEmailAddress);
+        mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey).child("privateInvites");
+        User newInvitee = new User("Invited User", email.getText().toString(), "UserId");
+        mInvitedUsersList.add(newInvitee);
+        mEventDatabaseReference.setValue(mInvitedUsersList);
+        //eventAttendeesView.setText(email.getText().toString());
+        dialog.dismiss();
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        Toast.makeText(this, "NEGATIVE", Toast.LENGTH_SHORT).show();
+        dialog.dismiss();
+    }
+
     private class AttendeeButtonListener implements View.OnClickListener {
 
         Cipher mCipher;
@@ -564,25 +634,29 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
             // Set up the crypto object for later. The object will be authenticated by use
             // of the fingerprint.
-            rotateVector();
+            if(isAdmin(mAdminEmail)){
+                showInvitedUsersDialog();
+            }else {
+                rotateVector();
 
-            if (initCipher(mCipher, mKeyName)) {
+                if (initCipher(mCipher, mKeyName)) {
                     showFingerprintDialog();
-            } else {
-                // This happens if the lock screen has been disabled or or a fingerprint got
-                // enrolled. Thus show the dialog to authenticate with their password first
-                // and ask the user if they want to authenticate with fingerprints in the
-                // future
-                FingerprintAuthenticationDialogFragment fragment
-                        = new FingerprintAuthenticationDialogFragment();
-                fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
-                fragment.setStage(
-                        FingerprintAuthenticationDialogFragment.Stage.NEW_FINGERPRINT_ENROLLED);
-                fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
+                } else {
+                    // This happens if the lock screen has been disabled or or a fingerprint got
+                    // enrolled. Thus show the dialog to authenticate with their password first
+                    // and ask the user if they want to authenticate with fingerprints in the
+                    // future
+                    FingerprintAuthenticationDialogFragment fragment
+                            = new FingerprintAuthenticationDialogFragment();
+                    fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
+                    fragment.setStage(
+                            FingerprintAuthenticationDialogFragment.Stage.NEW_FINGERPRINT_ENROLLED);
+                    fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
+                }
             }
         }
 
-        public void showFingerprintDialog(){
+        private void showFingerprintDialog(){
             new CountDownTimer(300, 2000){
 
                 public void onTick(long millisUntilFinished){
@@ -608,5 +682,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 }
             }.start();
         }
+
+
     }
 }

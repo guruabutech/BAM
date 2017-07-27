@@ -31,9 +31,9 @@ public class EventAdapter extends ArrayAdapter<Event> {
         String eventPublic = "Event Status: Public";
         String eventPrivate = "Event Status: Private";
         if(event.getPrivateEvent()){
-            eventStatus.setText(eventPublic);
-        }else{
             eventStatus.setText(eventPrivate);
+        }else{
+            eventStatus.setText(eventPublic);
 
         }
         return convertView;
