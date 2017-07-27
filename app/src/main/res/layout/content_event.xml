@@ -4,16 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="crescentcitydevelopment.com.bam.EventsActivity"
-    tools:showIn="@layout/activity_event"
-    android:orientation="vertical"
-    android:gravity="center">
+    tools:showIn="@layout/activity_event">
 
    <ListView
+       android:id="@+id/eventList"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
-       android:id="@+id/eventList"
        android:divider="@color/colorWhiteLight"
        android:dividerHeight="1dp"/>
     <LinearLayout
@@ -21,11 +21,11 @@
         android:layout_height="match_parent"
         android:gravity="center">
    <ProgressBar
+       android:id="@+id/progressBar"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:id="@+id/progressBar"
-       tools:layout_editor_absoluteY="8dp"
-       tools:layout_editor_absoluteX="8dp" />
+       tools:layout_editor_absoluteX="8dp"
+       tools:layout_editor_absoluteY="8dp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,9 +34,10 @@
     <TextView
         android:id="@+id/noEvents"
         android:layout_width="wrap_content"
-        android:textSize="24sp"
-        android:fontFamily="sans-serif"
         android:layout_height="wrap_content"
-        android:text="No Events Nearby"/>
+        android:fontFamily="sans-serif"
+        android:text="No Events Nearby"
+        android:textColor="@color/colorWhite"
+        android:textSize="24sp"/>
     </LinearLayout>
 </RelativeLayout>

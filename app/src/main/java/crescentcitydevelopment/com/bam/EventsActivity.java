@@ -359,6 +359,9 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         progressBar.setVisibility(View.GONE);
         if (mEventAdapter.getCount() == 0) {
             progressBar.setVisibility(View.GONE);
+            if(savedDbQuery){
+                mNoEvents.setText("No Event Invites");
+            }
             mEventListView.setEmptyView(mNoEvents);
         }
     }

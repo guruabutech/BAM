@@ -101,6 +101,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     private ImageView deleteIcon;
     private LinearLayout fabLayout;
     private User mCurrentUser;
+    private Boolean eventIsPrivate;
 
     //FINGERPRINT VARIABLES
     private KeyGenerator mKeyGenerator;
@@ -394,7 +395,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         }
 
 
-        if(dataSnapshot.getKey().equals("eventHours")){
+            if(dataSnapshot.getKey().equals("eventHours")){
             mDuration = dataSnapshot.getValue().toString();
             Log.v("DURATION SNAPSHOT", dataSnapshot.toString());
             Log.v("DURATION STRING", mDuration);
@@ -431,7 +432,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             }
           //  eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
         }
-        if(isPresent(mCurrentUser) && !isAdmin(mAdminEmail)){
+        if(isPresent(mCurrentUser) && !isAdmin(mAdminEmail.toLowerCase())){
             fab.setVisibility(View.INVISIBLE);
         }
         if(!isAdmin(mAdminEmail)){
