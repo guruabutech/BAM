@@ -52,9 +52,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static android.webkit.ConsoleMessage.MessageLevel.LOG;
+
 
 public class EventsActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ChildEventListener {
-    private String savedState = "savedDbQueryString";
+    private String savedQueryState = "savedDbQueryString";
+    private String savedUserEmailState = "savedUserEmail";
+    private String savedUserEmail;
     private Boolean savedDbQuery = false;
     private static final int REQUEST_CHECK_SETTINGS = 1;
     private int mLocationStatus;
@@ -84,11 +89,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
-            if(savedInstanceState.containsKey(savedState)){
-                savedDbQuery = savedInstanceState.getBoolean(savedState);
-            }
-        }
+
         setContentView(R.layout.activity_event);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -111,11 +112,21 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 } else {
                     mUserName = user.getDisplayName();
                     mUserEmail = user.getEmail().toLowerCase();
+                    Toast.makeText(EventsActivity.this, mUserEmail, Toast.LENGTH_SHORT).show();
                     mUserId = user.getUid();
 
                 }
             }
         };
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(savedQueryState)){
+                savedDbQuery = savedInstanceState.getBoolean(savedQueryState);
+            }
+            if(savedInstanceState.containsKey(savedUserEmailState)){
+                mUserEmail = savedInstanceState.getString(savedUserEmailState);
+            }
+        }
+
         mEventListView.setAdapter(mEventAdapter);
         mEventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -178,6 +189,15 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         this.menu = menu;
         publicMenuItem = menu.findItem(R.id.action_public_invites);
         privateMenuItem = menu.findItem(R.id.action_private_invites);
+        if(savedDbQuery){
+            publicMenuItem.setVisible(true);
+            privateMenuItem.setVisible(false);
+        }else{
+            publicMenuItem.setVisible(false);
+            privateMenuItem.setVisible(true);
+        }
+        publicMenuItem = menu.findItem(R.id.action_public_invites);
+        privateMenuItem = menu.findItem(R.id.action_private_invites);
         return true;
     }
 
@@ -202,7 +222,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 publicMenuItem.setVisible(false);
             }
             mEventAdapter.clear();
-           queryPrivateEvents(false);
+           queryPrivateEvents(savedDbQuery);
             return true;
         }
         if(id == R.id.action_private_invites){
@@ -210,11 +230,12 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             if(!publicMenuItem.isVisible()) {
                 publicMenuItem.setVisible(true);
             }
+
             if(privateMenuItem.isVisible()){
                 privateMenuItem.setVisible(false);
             }
             mEventAdapter.clear();
-            queryPrivateEvents(true);
+            queryPrivateEvents(savedDbQuery);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -252,7 +273,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
-        outState.putBoolean(savedState, savedDbQuery);
+        outState.putBoolean(savedQueryState, savedDbQuery);
+        outState.putString(savedUserEmailState, mUserEmail);
     }
 
     @Override
@@ -340,15 +362,14 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-       // Log.v(LOG_TAG, "CHILD ADDED");
+        Log.w(LOG_TAG, "CHILD ADDED");
 
         Event newEvent = dataSnapshot.getValue(Event.class);
         newEvent.setKey(dataSnapshot.getKey());
         if(savedDbQuery && newEvent.getPrivateEvent()){
-
             for(User user : newEvent.getPrivateInvites()){
+                Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
                 if(mUserEmail.equals(user.getEmailAddress().toLowerCase())){
-
                     mEventAdapter.add(newEvent);
                 }
             }
@@ -368,13 +389,13 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        //Log.w(LOG_TAG, "CHILD CHANGED");
+        Log.w(LOG_TAG, "CHILD CHANGED");
         mEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        //Log.w(LOG_TAG, "CHILD REMOVED");
+        Log.w(LOG_TAG, "CHILD REMOVED");
 
         for (Event events : mEvents) {
             if (events.getKey().toString().equals(dataSnapshot.getKey().toString())) {
@@ -393,7 +414,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-        //Log.w(LOG_TAG, "CHILD MOVED");
+        Log.w(LOG_TAG, "CHILD MOVED");
 
         mEventAdapter.notifyDataSetChanged();
     }
