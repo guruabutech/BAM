@@ -65,7 +65,7 @@ public class Geofencing implements ResultCallback {
     }
 
 
-
+    /*
     public void updateGeofencesList(PlaceBuffer places){
         mGeofenceList = new ArrayList<>();
         if(places == null || places.getCount() == 0) return;
@@ -73,6 +73,24 @@ public class Geofencing implements ResultCallback {
             String placeUID = place.getId();
             double placeLat = place.getLatLng().latitude;
             double placeLng = place.getLatLng().longitude;
+
+            Geofence geofence = new Geofence.Builder()
+                    .setRequestId(placeUID)
+                    .setExpirationDuration(GEOFENCE_TIMEOUT)
+                    .setCircularRegion(placeLat, placeLng, GEOFENCE_RADIUS)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .build();
+            mGeofenceList.add(geofence);
+        }
+    }
+    */
+    public void updateGeofencesList(ArrayList<Event> events){
+        mGeofenceList = new ArrayList<>();
+        if(events == null || events.size() == 0) return;
+        for(Event event : events){
+            String placeUID = event.getKey();
+            double placeLat = event.getLatitude();
+            double placeLng = event.getLongitude();
 
             Geofence geofence = new Geofence.Builder()
                     .setRequestId(placeUID)
