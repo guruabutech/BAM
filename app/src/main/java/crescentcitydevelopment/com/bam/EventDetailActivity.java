@@ -139,7 +139,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         mInvitedUsersList = new ArrayList<>();
         if(bd != null) {
             mKey = (String) bd.get("key");
-            Log.v("KEY",mKey);
+           // Log.v("KEY",mKey);
             int duration = (int) bd.get("duration");
             String hours = Integer.toString(duration)+" Hours";
             String title = (String) bd.get("title");
@@ -397,8 +397,8 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
             if(dataSnapshot.getKey().equals("eventHours")){
             mDuration = dataSnapshot.getValue().toString();
-            Log.v("DURATION SNAPSHOT", dataSnapshot.toString());
-            Log.v("DURATION STRING", mDuration);
+           // Log.v("DURATION SNAPSHOT", dataSnapshot.toString());
+           // Log.v("DURATION STRING", mDuration);
         }
         if(dataSnapshot.getKey().equals("attendees")){
             Long.toString(dataSnapshot.getChildrenCount());
@@ -441,7 +441,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     }
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        Log.v("CHILD CHANGED----", dataSnapshot.toString());
+       // Log.v("CHILD CHANGED----", dataSnapshot.toString());
         if(dataSnapshot.getKey().equals("attendees")){
             int childCount = (int) dataSnapshot.getChildrenCount();
             mAttendeeNameArray = new String[childCount];
@@ -586,7 +586,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             Toast.makeText(this, "Failed to encrypt the data with the generated key. "
                     + "Retry the purchase", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Failed to encrypt the data with the generated key." + e.getMessage());
+          //  Log.e(TAG, "Failed to encrypt the data with the generated key." + e.getMessage());
         }
     }
 
@@ -602,7 +602,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
-        Toast.makeText(this, "POSITIVE", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "POSITIVE", Toast.LENGTH_SHORT).show();
         EditText email = (EditText) dialog.getDialog().findViewById(R.id.inviteeEmailAddress);
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey).child("privateInvites");
         User newInvitee = new User("Invited User", email.getText().toString(), "UserId");
@@ -614,7 +614,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-        Toast.makeText(this, "NEGATIVE", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "NEGATIVE", Toast.LENGTH_SHORT).show();
         dialog.dismiss();
     }
 

@@ -112,7 +112,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 } else {
                     mUserName = user.getDisplayName();
                     mUserEmail = user.getEmail().toLowerCase();
-                    Toast.makeText(EventsActivity.this, mUserEmail, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(EventsActivity.this, mUserEmail, Toast.LENGTH_SHORT).show();
                     mUserId = user.getUid();
 
                 }
@@ -168,7 +168,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                     configureLocation();
                     Snackbar.make(view, "Location Denied... Check Permissions", Snackbar.LENGTH_LONG).show();
                 }else{
-                    Log.v("LOCATION STATUS---", Double.toString(mLat) + Double.toString(mLng));
+                   // Log.v("LOCATION STATUS---", Double.toString(mLat) + Double.toString(mLng));
                     Intent intent = new Intent(EventsActivity.this, AddEventActivity.class)
                             .putExtra("lat", Double.toString(mLat))
                             .putExtra("long", Double.toString(mLng))
@@ -300,11 +300,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
         } catch (IOException e) {
             e.printStackTrace();
-            Log.v("GEOCODER ERROR","GEOCODER ERROR");
+       //     Log.v("GEOCODER ERROR","GEOCODER ERROR");
         }
         if (addresses.size() > 0)
         {
-            Log.v("LOCATION ADDRESS","ADD "+addresses.get(0).getAddressLine(1));
+       //     Log.v("LOCATION ADDRESS","ADD "+addresses.get(0).getAddressLine(1));
         }
         return editedAddress;
     }
@@ -312,14 +312,14 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.v("CONNECTION SUSPENDED", "SUSPENDED");
+     //   Log.v("CONNECTION SUSPENDED", "SUSPENDED");
 
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         showAlert();
-        Log.v("CONNECTION FAILED", "FAILED");
+       // Log.v("CONNECTION FAILED", "FAILED");
 
     }
 
@@ -327,15 +327,15 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     public void onLocationChanged(Location location) {
         if (progressBar.isShown() && mLocationStatus == 6) {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Location Configured", Toast.LENGTH_SHORT).show();
+       //     Toast.makeText(this, "Location Configured", Toast.LENGTH_SHORT).show();
             mLocationStatus = 777;
-            Log.v(LOG_TAG, "LOCATION CHANGED---");
+     //       Log.v(LOG_TAG, "LOCATION CHANGED---");
         }
         mLat = location.getLatitude();
         mLng = location.getLongitude();
 
-        Log.v(LOG_TAG, "LOCATION CHANGED---");
-        Log.v(LOG_TAG, mLat+" "+mLng);
+       // Log.v(LOG_TAG, "LOCATION CHANGED---");
+      //  Log.v(LOG_TAG, mLat+" "+mLng);
     }
 
     public void showAlert() {
@@ -362,13 +362,13 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-        Log.w(LOG_TAG, "CHILD ADDED");
+       // Log.w(LOG_TAG, "CHILD ADDED");
 
         Event newEvent = dataSnapshot.getValue(Event.class);
         newEvent.setKey(dataSnapshot.getKey());
         if(savedDbQuery && newEvent.getPrivateEvent()){
             for(User user : newEvent.getPrivateInvites()){
-                Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
+               // Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
                 if(mUserEmail.equals(user.getEmailAddress().toLowerCase())){
                     mEventAdapter.add(newEvent);
                 }
@@ -389,13 +389,13 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        Log.w(LOG_TAG, "CHILD CHANGED");
+       // Log.w(LOG_TAG, "CHILD CHANGED");
         mEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Log.w(LOG_TAG, "CHILD REMOVED");
+       // Log.w(LOG_TAG, "CHILD REMOVED");
 
         for (Event events : mEvents) {
             if (events.getKey().toString().equals(dataSnapshot.getKey().toString())) {
@@ -414,7 +414,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-        Log.w(LOG_TAG, "CHILD MOVED");
+       // Log.w(LOG_TAG, "CHILD MOVED");
 
         mEventAdapter.notifyDataSetChanged();
     }
@@ -439,7 +439,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             return;
         } else {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            Log.v(LOG_TAG, "LOCATION FUSED");
+           // Log.v(LOG_TAG, "LOCATION FUSED");
         }
     }
     @Override
@@ -450,7 +450,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             if (grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
-                Log.v(LOG_TAG, "PERMISSION GRANTED---");
+               // Log.v(LOG_TAG, "PERMISSION GRANTED---");
 
                 LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                         .addLocationRequest(mLocationRequest);
@@ -467,7 +467,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                             case LocationSettingsStatusCodes.SUCCESS:
                                 // All location settings are satisfied. The client can
                                 // initialize location requests here.
-                                Log.v("SUCCESS---SUCCESS", Integer.toString(mLocationStatus));
+                              //  Log.v("SUCCESS---SUCCESS", Integer.toString(mLocationStatus));
 
                                 break;
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -479,7 +479,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
                                     status.startResolutionForResult(EventsActivity.this, REQUEST_CHECK_SETTINGS);
                                     mLocationStatus = LocationSettingsStatusCodes.RESOLUTION_REQUIRED;
-                                    Log.v("RESOLUTION REQUIRED", Integer.toString(mLocationStatus));
+                                   // Log.v("RESOLUTION REQUIRED", Integer.toString(mLocationStatus));
 
                                 } catch (IntentSender.SendIntentException e) {
                                     // Ignore the error.
@@ -488,7 +488,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                                 // Location settings are not satisfied. However, we have no way
                                 // to fix the settings so we won't show the dialog.g
-                                Log.v("CHANGE UNAVAILABLE", Integer.toString(mLocationStatus));
+                               // Log.v("CHANGE UNAVAILABLE", Integer.toString(mLocationStatus));
                                 break;
                         }
                     }
