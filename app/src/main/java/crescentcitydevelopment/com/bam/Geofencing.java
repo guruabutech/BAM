@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Geofencing implements ResultCallback {
+    private static final String TAG = Geofencing.class.getSimpleName();
     private List<Geofence> mGeofenceList;
     private GoogleApiClient mGoogleApiClient;
     private PendingIntent mGeofencePendingIntent;
     private Context mContext;
-    private static final float GEOFENCE_RADIUS = 50; // 50 meters
-    private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
+    //private static final float GEOFENCE_RADIUS = 50; // 50 meters
+    //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
     public Geofencing(Context context, GoogleApiClient client){
         mContext = context;
@@ -47,7 +48,7 @@ public class Geofencing implements ResultCallback {
                     getGeofencePendingIntent()
                     ).setResultCallback(this);
         }catch (SecurityException securityException){
-
+            Log.e(TAG, securityException.getMessage());
         }
     }
     public void unregisterAllGeofences(){
@@ -60,7 +61,7 @@ public class Geofencing implements ResultCallback {
                     getGeofencePendingIntent()
             ).setResultCallback(this);
         }catch (SecurityException securityException){
-
+            Log.e(TAG, securityException.getMessage());
         }
     }
 
@@ -84,18 +85,18 @@ public class Geofencing implements ResultCallback {
         }
     }
     */
-    public void updateGeofencesList(ArrayList<Event> events){
+    public void updateGeofencesList(ArrayList<Event> events, float eventRadius, long eventDuration){
         mGeofenceList = new ArrayList<>();
         if(events == null || events.size() == 0) return;
         for(Event event : events){
-            String placeUID = event.getKey();
+            String eventKey = event.getKey();
             double placeLat = event.getLatitude();
             double placeLng = event.getLongitude();
 
             Geofence geofence = new Geofence.Builder()
-                    .setRequestId(placeUID)
-                    .setExpirationDuration(GEOFENCE_TIMEOUT)
-                    .setCircularRegion(placeLat, placeLng, GEOFENCE_RADIUS)
+                    .setRequestId(eventKey)
+                    .setExpirationDuration(eventDuration)
+                    .setCircularRegion(placeLat, placeLng, eventRadius)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                     .build();
             mGeofenceList.add(geofence);
@@ -122,6 +123,6 @@ public class Geofencing implements ResultCallback {
 
     @Override
     public void onResult(@NonNull Result result) {
-
+            Log.e(TAG, "Error adding/removing geofence: "+result.getStatus().toString());
     }
 }

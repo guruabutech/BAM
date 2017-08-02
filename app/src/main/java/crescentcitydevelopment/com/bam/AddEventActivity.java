@@ -39,13 +39,20 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class AddEventActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener {
+public class AddEventActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener, ChildEventListener {
+    private final static String TAG = AddEventActivity.class.getSimpleName();
+    private boolean hasEventCount;
     private final String LOG_TAG = "BAM TAG";
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEventDatabaseReference;
@@ -61,11 +68,14 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     private GoogleMap mAddEventMap;
     boolean mapReady = false;
     private GoogleApiClient mGoogleApiClient;
+    private Geofencing mGeofencing;
     private double mLat, mLng;
     private boolean privateEvent = false;
     private LinearLayout locationLayout;
     private List<User> mPrivateInvites;
+    private ArrayList<Event> mEvents;
     int PLACE_PICKER_REQUEST = 1;
+    private int eventCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,9 +84,11 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
         mPrivateInvites = new ArrayList<>();
+        mEvents = new ArrayList<>();
         setSupportActionBar(toolbar);
         Intent intent = getIntent();
         Bundle bd = intent.getExtras();
+        hasEventCount = false;
 
         if(bd != null){
             lat = (String) bd.get("lat");
@@ -94,10 +106,12 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+        mGeofencing = new Geofencing(this, mGoogleApiClient);
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.eventMap);
         mapFragment.getMapAsync(this);
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
+        mEventDatabaseReference.addChildEventListener(this);
         eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
         eventRadiusSpinner = (Spinner) findViewById(R.id.eventRadiusSpinner);
         ArrayAdapter<CharSequence> durationSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.time_array, R.layout.spinner_item);
@@ -266,6 +280,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                 attendees.add(attendee1);
                 Event event = new Event(eventName.getText().toString(), eventDesc.getText().toString(),mLat, mLng, mSelectedHours, mSelectedRadius, attendees, attendee1, privateEvent, mPrivateInvites);
                 mEventDatabaseReference.push().setValue(event);
+                //mGeofencing.registerAllGeofences();
                 finish();
             }
             return true;
@@ -378,5 +393,56 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         } catch (Exception e) {
             Log.e("Places Error ", e.getMessage());
         }
+    }
+
+    @Override
+    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+   //     Log.v(TAG, "ChildCount "+Long.toString(dataSnapshot.getChildrenCount()));
+        Event newEvent = dataSnapshot.getValue(Event.class);
+        Log.v(TAG, "Name "+newEvent.getEventName());
+
+       // if(mEvents.size() != 0){
+       //     mEvents.clear();
+       // }
+       // if(dataSnapshot.getKey().equals("events")) {
+       //      Log.v(TAG, Long.toString(dataSnapshot.getChildrenCount())+" Events");
+
+       //     if(!hasEventCount) {
+       //         for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
+
+       //             String eventNumber = Integer.toString(i);
+       //             Double eventLat = Double.parseDouble(dataSnapshot.child(eventNumber).child("latitude").getValue().toString());
+       //             Double eventLong = Double.parseDouble(dataSnapshot.child(eventNumber).child("longitude").getValue().toString());
+       //             Double eventRadius = Double.parseDouble(dataSnapshot.child(eventNumber).child("radius").getValue().toString());
+       //             int eventDuration = Integer.getInteger(dataSnapshot.child(eventNumber).child("eventHours").getValue().toString());
+       //             Event event = new Event(eventLat, eventLong, eventRadius, eventDuration);
+       //             Log.v(TAG, event.getEventName());
+       //             mEvents.add(event);
+       //         }
+       //         hasEventCount = true;
+       //     }
+       // }
+
+
+    }
+
+    @Override
+    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+    }
+
+    @Override
+    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+    }
+
+    @Override
+    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
     }
 }

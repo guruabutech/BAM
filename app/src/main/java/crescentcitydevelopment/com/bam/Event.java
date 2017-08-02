@@ -17,13 +17,13 @@ public class Event  {
     private User admin;
     private double longitude;
     private double latitude;
-    private int radius;
+    private double radius;
     private List<User> attendees;
     private List<User> privateInvites;
     public Event(){
 
     }
-    public Event(String eName, String eDescription, double elatitude, double longitude, int duration, int radius, List<User> attendees, User admin, boolean privateEvent, List<User> privateInvites){
+    public Event(String eName, String eDescription, double elatitude, double longitude, int duration, double radius, List<User> attendees, User admin, boolean privateEvent, List<User> privateInvites){
         this.eventName = eName;
         this.eventDescription = eDescription;
         this.latitude = elatitude;
@@ -42,11 +42,19 @@ public class Event  {
         this.longitude = longitude;
         this.eventHours = hours;
     }
-
+    public Event(double elatitude, double elongitude, double radius, int hours){
+        this.latitude = elatitude;
+        this.longitude = elongitude;
+        this.radius = radius;
+        this.eventHours = hours;
+    }
     public Event(String eventName, String eventDescription){
         this.eventName = eventName;
         this.eventDescription = eventDescription;
     }
+
+
+
 
     public Event(String eventName, String eventDescription, int hours){
         this.eventName = eventName;
@@ -88,7 +96,7 @@ public class Event  {
     public double getLongitude(){
         return longitude;
     }
-    public int getRadius(){
+    public double getRadius(){
         return radius;
     }
     public boolean getPrivateEvent(){ return privateEvent; }
