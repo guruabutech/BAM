@@ -11,7 +11,10 @@
     <string name="public_invite">Public Invites</string>
     <string name="private_invite">Private Invites</string>
     <string name="invite_email_hint">Example@gmail.com</string>
-    
+    <string name="pref_geofence_entered_key">geofenceEntered</string>
+    <string name="pref_geofence_entered">1234567</string>
+
+    <!-- AnimatedVector Resources !-->
     <string name="path_attend">M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM6,10L6,7L4,7v3L1,10v2h3v3h2v-3h3v-2L6,10zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z</string>
     <string name="path_attendCross">M6,10L6,7L4,7v3L1,10v2h3v3h2v-3h3v-2L6,10z</string>
     <string name="path_attendNoCross">M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z</string>

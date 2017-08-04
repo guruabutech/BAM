@@ -74,6 +74,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private double mLat;
+    private Geofencing mGeofencing;
     Menu menu;
     MenuItem publicMenuItem, privateMenuItem;
     private double mLng;
@@ -85,6 +86,9 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     private String mUserEmail;
     public static final int REQUEST_LOCATION = 99;
     private int attendeeCount;
+    private ArrayList<Event> mGeofenceList;
+    private long mChildCount;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +97,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         setContentView(R.layout.activity_event);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mGeofenceList = new ArrayList<>();
         mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
         mEventListView = (ListView) findViewById(R.id.eventList);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -144,6 +149,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                         .putExtra("eventAddress", location)
                         .putExtra("eventLatitude", event.getLatitude())
                         .putExtra("eventLongitude", event.getLongitude())
+                        .putExtra("timeStamp", Long.toString(event.getTimeStamp()))
                         .putExtra("userName", mUserName)
                         .putExtra("userEmail", mUserEmail)
                         .putExtra("userId", mUserId)
@@ -156,6 +162,9 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+        mGeofencing = new Geofencing(this, mGoogleApiClient);
+
+
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -179,7 +188,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 }
             }
         });
-        queryPrivateEvents(savedDbQuery);
+        initialDbQuery();
+       // queryPrivateEvents(savedDbQuery);
     }
 
     @Override
@@ -363,27 +373,44 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
        // Log.w(LOG_TAG, "CHILD ADDED");
+        if (!dataSnapshot.getKey().equals("events")) {
+            Event newEvent = dataSnapshot.getValue(Event.class);
+            Event eventGeofences = new Event(newEvent.getLatitude(), newEvent.getLongitude(), newEvent.getRadius(), newEvent.getEventHours(), newEvent.getTimeStamp());
+            //  if(mGeofenceList != null || mGeofenceList.size() == 0){
+            //      mGeofenceList.clear();
+            //  }
+            mGeofenceList.add(eventGeofences);
+            if(mGeofenceList.size() >= mChildCount){
+                Log.v("ALL CHILDREN ADDED","ALL CHILDREN ADDED");
+                mGeofencing.updateGeofencesList(mGeofenceList);
+                mGeofencing.registerAllGeofences();
 
-        Event newEvent = dataSnapshot.getValue(Event.class);
-        newEvent.setKey(dataSnapshot.getKey());
-        if(savedDbQuery && newEvent.getPrivateEvent()){
-            for(User user : newEvent.getPrivateInvites()){
-               // Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
-                if(mUserEmail.equals(user.getEmailAddress().toLowerCase())){
-                    mEventAdapter.add(newEvent);
+            }
+            newEvent.setKey(dataSnapshot.getKey());
+            if (savedDbQuery && newEvent.getPrivateEvent()) {
+                for (User user : newEvent.getPrivateInvites()) {
+                    // Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
+                    if (mUserEmail.equals(user.getEmailAddress().toLowerCase())) {
+                        mEventAdapter.add(newEvent);
+
+                    }
                 }
+            } else {
+                mEventAdapter.add(newEvent);
             }
-        }else {
-            mEventAdapter.add(newEvent);
-        }
-        attendeeCount = newEvent.getAttendees().size();
-        progressBar.setVisibility(View.GONE);
-        if (mEventAdapter.getCount() == 0) {
+            attendeeCount = newEvent.getAttendees().size();
             progressBar.setVisibility(View.GONE);
-            if(savedDbQuery){
-                mNoEvents.setText("No Event Invites");
+            if (mEventAdapter.getCount() == 0) {
+                progressBar.setVisibility(View.GONE);
+                if (savedDbQuery) {
+                    mNoEvents.setText("No Event Invites");
+                }
+                mEventListView.setEmptyView(mNoEvents);
             }
-            mEventListView.setEmptyView(mNoEvents);
+        }else{
+            Log.v("ChildCount", Long.toString(dataSnapshot.getChildrenCount()));
+            mChildCount = dataSnapshot.getChildrenCount();
+            queryPrivateEvents(savedDbQuery);
         }
     }
 
@@ -441,6 +468,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
            // Log.v(LOG_TAG, "LOCATION FUSED");
         }
+    }
+
+    private void initialDbQuery(){
+        mEventDatabaseReference = mFirebaseDatabase.getReference();
+        mEventDatabaseReference.addChildEventListener(this);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

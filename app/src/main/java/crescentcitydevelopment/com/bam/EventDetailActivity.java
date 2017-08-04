@@ -5,12 +5,14 @@ import android.app.Dialog;
 import android.app.KeyguardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
@@ -56,6 +58,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -76,6 +79,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     private double eventLatitude;
     private double eventLongitude;
     private int attendeeCount;
+    private Boolean isAttendable;
     private String eventKey;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEventDatabaseReference;
@@ -102,6 +106,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     private LinearLayout fabLayout;
     private User mCurrentUser;
     private Boolean eventIsPrivate;
+    private String mTimeStamp;
 
     //FINGERPRINT VARIABLES
     private KeyGenerator mKeyGenerator;
@@ -116,7 +121,8 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
-
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String geofenceList = sharedPreferences.getString(getString(R.string.pref_geofence_entered), "none");
         fabLayout = (LinearLayout) findViewById(R.id.fabLayout);
         backIcon = (ImageView) findViewById(R.id.backArrowIcon);
         deleteIcon = (ImageView) findViewById(R.id.deleteIcon);
@@ -140,17 +146,18 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         if(bd != null) {
             mKey = (String) bd.get("key");
            // Log.v("KEY",mKey);
-            int duration = (int) bd.get("duration");
-            String hours = Integer.toString(duration)+" Hours";
+            long duration = (long) bd.get("duration");
+            String hours = Long.toString(TimeUnit.MILLISECONDS.toHours(duration))+" Hours";
             String title = (String) bd.get("title");
             mUsername = (String) bd.get("userName");
             mUserEmail = (String) bd.get("userEmail");
             mUserId = (String) bd.get("userId");
+            mTimeStamp = (String) bd.get("timeStamp");
             mEventDesc = (String) bd.get("desc");
             String admin = (String) bd.get("admin");
             mLocation = (String) bd.get("eventAddress");
             attendeeCount = (int) bd.get("attendeeCount");
-            eventKey = (String) bd.get("kdy");
+            eventKey = (String) bd.get("key");
             eventLatitude = (Double) bd.get("eventLatitude");
             eventLongitude = (Double) bd.get("eventLongitude");
             mEventName = (String) bd.get("eventName");
@@ -161,6 +168,8 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             eventAttendeesView.setText(attendeeCount +" "+"Attendees");
             eventLocationView.setText(mLocation);
         }
+        isAttendable = geofenceList.contains(mTimeStamp);
+        Log.v("Shared Preference", geofenceList +" " +Boolean.toString(geofenceList.contains(mTimeStamp)));
         mCurrentUser = new User(mUsername, mUserEmail,mUserId);
 
         deleteIcon.setOnClickListener(new View.OnClickListener() {

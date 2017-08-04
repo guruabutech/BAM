@@ -24,21 +24,23 @@ import java.util.List;
 public class Geofencing implements ResultCallback {
     private static final String TAG = Geofencing.class.getSimpleName();
     private List<Geofence> mGeofenceList;
+    private Geofence mGeofence;
     private GoogleApiClient mGoogleApiClient;
     private PendingIntent mGeofencePendingIntent;
     private Context mContext;
-    //private static final float GEOFENCE_RADIUS = 50; // 50 meters
-    //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
+
 
     public Geofencing(Context context, GoogleApiClient client){
         mContext = context;
         mGoogleApiClient = client;
-        mGoogleApiClient = null;
+       mGeofencePendingIntent = null;
         mGeofenceList = new ArrayList<>();
     }
-    public void registerAllGeofences(){
-        if(mGoogleApiClient == null || !mGoogleApiClient.isConnected() ||
-                mGeofenceList == null || mGeofenceList.size() == 0){
+
+
+    public void registerGeofence(){
+        if(mGoogleApiClient == null || !mGoogleApiClient.isConnected()) {
+            Log.v(TAG,"API Client Problem");
             return;
         }
         try {
@@ -46,8 +48,9 @@ public class Geofencing implements ResultCallback {
                     mGoogleApiClient,
                     getGeofencingRequest(),
                     getGeofencePendingIntent()
-                    ).setResultCallback(this);
+            ).setResultCallback(this);
         }catch (SecurityException securityException){
+            Log.v(TAG,"Register Geofence Error: "+securityException.getMessage());
             Log.e(TAG, securityException.getMessage());
         }
     }
@@ -66,48 +69,24 @@ public class Geofencing implements ResultCallback {
     }
 
 
-    /*
-    public void updateGeofencesList(PlaceBuffer places){
-        mGeofenceList = new ArrayList<>();
-        if(places == null || places.getCount() == 0) return;
-        for(Place place : places){
-            String placeUID = place.getId();
-            double placeLat = place.getLatLng().latitude;
-            double placeLng = place.getLatLng().longitude;
 
-            Geofence geofence = new Geofence.Builder()
-                    .setRequestId(placeUID)
-                    .setExpirationDuration(GEOFENCE_TIMEOUT)
-                    .setCircularRegion(placeLat, placeLng, GEOFENCE_RADIUS)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build();
-            mGeofenceList.add(geofence);
-        }
-    }
-    */
-    public void updateGeofencesList(ArrayList<Event> events, float eventRadius, long eventDuration){
-        mGeofenceList = new ArrayList<>();
-        if(events == null || events.size() == 0) return;
-        for(Event event : events){
-            String eventKey = event.getKey();
-            double placeLat = event.getLatitude();
-            double placeLng = event.getLongitude();
+    public void addGeofence(Event event){
+        mGeofence = new Geofence.Builder()
+                .setRequestId(Long.toString(event.getTimeStamp()))
+                .setExpirationDuration(event.getEventHours())
+                .setCircularRegion(event.getLatitude(), event.getLongitude(), event.getRadius())
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .build();
 
-            Geofence geofence = new Geofence.Builder()
-                    .setRequestId(eventKey)
-                    .setExpirationDuration(eventDuration)
-                    .setCircularRegion(placeLat, placeLng, eventRadius)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build();
-            mGeofenceList.add(geofence);
-        }
     }
+
 
     private GeofencingRequest getGeofencingRequest(){
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         //If user is already inside, trigger entry event
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         //Add geofence to ArrayList & Build it
+       // builder.addGeofence(mGeofence);
         builder.addGeofences(mGeofenceList);
         return builder.build();
     }
@@ -118,11 +97,46 @@ public class Geofencing implements ResultCallback {
         }
         Intent intent = new Intent(mContext, GeofenceBroadcastReceiver.class);
         mGeofencePendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Log.v(TAG,"Flag Update: " + Integer.toString(PendingIntent.FLAG_UPDATE_CURRENT));
         return mGeofencePendingIntent;
     }
 
     @Override
     public void onResult(@NonNull Result result) {
             Log.e(TAG, "Error adding/removing geofence: "+result.getStatus().toString());
+    }
+
+    //    ADD GEOFENCE LIST
+    public void updateGeofencesList(ArrayList<Event> events){
+        mGeofenceList = new ArrayList<>();
+        if(events == null || events.size() == 0) return;
+        for(Event event : events){
+            double placeLat = event.getLatitude();
+            double placeLng = event.getLongitude();
+            Geofence geofence = new Geofence.Builder()
+                    .setRequestId(Long.toString(event.getTimeStamp()))
+                    .setExpirationDuration(event.getEventHours())
+                    .setCircularRegion(placeLat, placeLng, event.getRadius())
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .build();
+            mGeofenceList.add(geofence);
+        }
+    }
+
+
+    public void registerAllGeofences(){
+        if(mGoogleApiClient == null || !mGoogleApiClient.isConnected() ||
+                mGeofenceList == null || mGeofenceList.size() == 0) {
+            return;
+        }
+        try {
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    getGeofencingRequest(),
+                    getGeofencePendingIntent()
+                    ).setResultCallback(this);
+        }catch (SecurityException securityException){
+            Log.e(TAG, securityException.getMessage());
+        }
     }
 }

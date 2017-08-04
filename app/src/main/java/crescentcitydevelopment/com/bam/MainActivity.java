@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
                 if(user != null){
                             //user signed in
                         }else{

@@ -13,17 +13,18 @@ public class Event  {
     private boolean privateEvent;
     private String eventName;
     private String eventDescription;
-    private int eventHours;
+    private long eventHours;
+    private long timeStamp;
     private User admin;
     private double longitude;
     private double latitude;
-    private double radius;
+    private float radius;
     private List<User> attendees;
     private List<User> privateInvites;
     public Event(){
 
     }
-    public Event(String eName, String eDescription, double elatitude, double longitude, int duration, double radius, List<User> attendees, User admin, boolean privateEvent, List<User> privateInvites){
+    public Event(String eName, String eDescription, double elatitude, double longitude, long duration, float radius, List<User> attendees, User admin, boolean privateEvent, List<User> privateInvites, long timeStamp){
         this.eventName = eName;
         this.eventDescription = eDescription;
         this.latitude = elatitude;
@@ -34,19 +35,21 @@ public class Event  {
         this.admin = admin;
         this.privateEvent = privateEvent;
         this.privateInvites = privateInvites;
+        this.timeStamp = timeStamp;
     }
-   public Event(String eName, String eDiscription, double elatitude, double longitude, int hours){
+   public Event(String eName, String eDiscription, double elatitude, double longitude, long hours){
         this.eventName = eName;
         this.eventDescription = eDiscription;
         this.latitude = elatitude;
         this.longitude = longitude;
         this.eventHours = hours;
     }
-    public Event(double elatitude, double elongitude, double radius, int hours){
+    public Event(double elatitude, double elongitude, float radius, long hours, long timeStamp){
         this.latitude = elatitude;
         this.longitude = elongitude;
         this.radius = radius;
         this.eventHours = hours;
+        this.timeStamp = timeStamp;
     }
     public Event(String eventName, String eventDescription){
         this.eventName = eventName;
@@ -82,7 +85,7 @@ public class Event  {
         return key;
     }
 
-    public int getEventHours(){
+    public long getEventHours(){
         return eventHours;
     }
 
@@ -96,7 +99,7 @@ public class Event  {
     public double getLongitude(){
         return longitude;
     }
-    public double getRadius(){
+    public float getRadius(){
         return radius;
     }
     public boolean getPrivateEvent(){ return privateEvent; }
@@ -105,4 +108,6 @@ public class Event  {
     public List<User> getAttendees(){return attendees;}
 
     public List<User> getPrivateInvites(){ return privateInvites;}
+
+    public long getTimeStamp(){ return timeStamp;}
 }
