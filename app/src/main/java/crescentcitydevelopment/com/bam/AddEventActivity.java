@@ -105,7 +105,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
             mUsername = (String) bd.get("userName");
             mUserEmail = (String) bd.get("userEmail");
             mUserId = (String) bd.get("userId");
-            Log.v("USERID---",mUserId);
+
         }
 
         mLat = Double.parseDouble(lat);
@@ -185,7 +185,6 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         eventDesc = (EditText) findViewById(R.id.eventDescriptionField);
         eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
         mAddEventLocationView = (TextView) findViewById(R.id.addEventLocation);
-        //mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
         secondQuery();
     }
 
@@ -229,7 +228,6 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
 
             if(place == null){
-                Log.i("PLACES RESULTS","NO PLACE SELECTED");
                 return;
             }else {
                 mAddEventMap.clear();
@@ -249,7 +247,6 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                         .fillColor(Color.argb(64,0,255,0)));
                 mAddEventMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
             }
-            Log.i("PLACEPICKER---", placeAddress);
 
         }
     }
@@ -298,12 +295,8 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                 mEventDatabaseReference.push().setValue(event);
 
                 mEvents.add(eventGeofence);
-                //Log.v(TAG, Integer.toString(mEvents.size()));
                 mGeofencing.updateGeofencesList(mEvents);
-               // mGeofencing.addGeofence(eventGeofence);
-               // mGeofencing.registerGeofence();
                 mGeofencing.registerAllGeofences();
-               // mGeofencing.unregisterAllGeofences();
                 finish();
             }
             return true;
@@ -318,7 +311,6 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
            if(!invite.isVisible()){
                invite.setVisible(true);
            }
-            //menu.findItem(R.id.action_invite).setVisible(true);
             return true;
         }
         if(id == R.id.action_public_event){
@@ -369,24 +361,24 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.i(LOG_TAG, "GOOGLEAPICLIENT CONNECTION SUSPENDED");
+
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.i(LOG_TAG, "GOOGLEAPICLIENT CONNECTION FAILED");
+
 
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(LOG_TAG, "LOCATION: "+location.toString());
+
     }
 
     @Override
     public void onBackPressed(){
         showAlert();
-       // super.onBackPressed();
+
     }
 
     public void updateMap(){
@@ -420,47 +412,18 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-   //     Log.v(TAG, "ChildCount "+Long.toString(dataSnapshot.getChildrenCount()));
         if(!hasEventCount) {
             if (dataSnapshot.getKey().equals("events")) {
-                Log.v(TAG, "Event Count: " + Long.toString(dataSnapshot.getChildrenCount()));
                 eventCount = dataSnapshot.getChildrenCount();
             } else {
                 Event newEvent = dataSnapshot.getValue(Event.class);
-                Log.v(TAG, "Name " + newEvent.getEventName());
                 Event geofenceParam = new Event(newEvent.getLatitude(), newEvent.getLongitude(), newEvent.getRadius(), newEvent.getEventHours(), newEvent.getTimeStamp());
                 mEvents.add(geofenceParam);
                 if (mEvents.size() >= eventCount) {
-                    Log.v(TAG, "ALL CHILDREN ADDED");
                     hasEventCount = true;
                 }
             }
         }
-
-       // if(mEvents.size() != 0){
-       //     mEvents.clear();
-       // }
-       // if(dataSnapshot.getKey().equals("events")) {
-       //      Log.v(TAG, Long.toString(dataSnapshot.getChildrenCount())+" Events");
-
-         //   if(!hasEventCount) {
-         //       for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
-
-         //           String eventNumber = Integer.toString(i);
-         //           Double eventLat = Double.parseDouble(dataSnapshot.child(eventNumber).child("latitude").getValue().toString());
-         //           Double eventLong = Double.parseDouble(dataSnapshot.child(eventNumber).child("longitude").getValue().toString());
-         //           Float eventRadius = Float.parseFloat(dataSnapshot.child(eventNumber).child("radius").getValue().toString());
-         //           long eventDuration = Long.getLong(dataSnapshot.child(eventNumber).child("eventHours").getValue().toString());
-         //           long eventTimeStamp = Long.getLong(dataSnapshot.child(eventNumber).child("timeStamp").getValue().toString());
-
-         //           Event event = new Event(eventLat, eventLong, eventRadius, eventDuration, eventTimeStamp);
-         //           Log.v(TAG, event.getEventName());
-         //           mEvents.add(event);
-         //       }
-         //       hasEventCount = true;
-         //   }
-        //}
-
 
     }
 

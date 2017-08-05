@@ -145,7 +145,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         mInvitedUsersList = new ArrayList<>();
         if(bd != null) {
             mKey = (String) bd.get("key");
-           // Log.v("KEY",mKey);
             long duration = (long) bd.get("duration");
             String hours = Long.toString(TimeUnit.MILLISECONDS.toHours(duration))+" Hours";
             String title = (String) bd.get("title");
@@ -169,7 +168,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             eventLocationView.setText(mLocation);
         }
         isAttendable = geofenceList.contains(mTimeStamp);
-        Log.v("Shared Preference", geofenceList +" " +Boolean.toString(geofenceList.contains(mTimeStamp)));
         mCurrentUser = new User(mUsername, mUserEmail,mUserId);
 
         deleteIcon.setOnClickListener(new View.OnClickListener() {
@@ -406,8 +404,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
             if(dataSnapshot.getKey().equals("eventHours")){
             mDuration = dataSnapshot.getValue().toString();
-           // Log.v("DURATION SNAPSHOT", dataSnapshot.toString());
-           // Log.v("DURATION STRING", mDuration);
         }
         if(dataSnapshot.getKey().equals("attendees")){
             Long.toString(dataSnapshot.getChildrenCount());
@@ -450,7 +446,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
     }
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-       // Log.v("CHILD CHANGED----", dataSnapshot.toString());
+
         if(dataSnapshot.getKey().equals("attendees")){
             int childCount = (int) dataSnapshot.getChildrenCount();
             mAttendeeNameArray = new String[childCount];
@@ -458,8 +454,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             {
                 String attendeeNumber = Integer.toString(i);
                 String attendeeName =dataSnapshot.child(attendeeNumber).child("userName").getValue().toString();
-                //String attendeeEmail =dataSnapshot.child(attendeeNumber).child("emailAddress").getValue().toString();
-                //String attendeeUserId =dataSnapshot.child(attendeeNumber).child("userId").getValue().toString();
                 mAttendeeNameArray[i] = attendeeName;
             }
                 eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
@@ -595,35 +589,36 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             Toast.makeText(this, "Failed to encrypt the data with the generated key. "
                     + "Retry the purchase", Toast.LENGTH_LONG).show();
-          //  Log.e(TAG, "Failed to encrypt the data with the generated key." + e.getMessage());
         }
     }
 
     private void showConfirmation(byte[] encrypted) {
         if (encrypted != null) {
-            mAttendeeList.add(mCurrentUser);
-            mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey).child("attendees");
-            mEventDatabaseReference.setValue(mAttendeeList);
-            fabOut();
-            Toast.makeText(this, "Attendance Documented", Toast.LENGTH_SHORT).show();
+            if(isAttendable) {
+                mAttendeeList.add(mCurrentUser);
+                mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey).child("attendees");
+                mEventDatabaseReference.setValue(mAttendeeList);
+                fabOut();
+                Toast.makeText(this, "Attendance Documented", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "Not Within Event Radius", Toast.LENGTH_SHORT).show();
+
+            }
         }
     }
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
-       // Toast.makeText(this, "POSITIVE", Toast.LENGTH_SHORT).show();
         EditText email = (EditText) dialog.getDialog().findViewById(R.id.inviteeEmailAddress);
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey).child("privateInvites");
         User newInvitee = new User("Invited User", email.getText().toString(), "UserId");
         mInvitedUsersList.add(newInvitee);
         mEventDatabaseReference.setValue(mInvitedUsersList);
-        //eventAttendeesView.setText(email.getText().toString());
         dialog.dismiss();
     }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-       // Toast.makeText(this, "NEGATIVE", Toast.LENGTH_SHORT).show();
         dialog.dismiss();
     }
 
@@ -639,8 +634,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
         @Override
         public void onClick(View view) {
-            //   findViewById(R.id.confirmation_message).setVisibility(View.GONE);
-            //   findViewById(R.id.encrypted_message).setVisibility(View.GONE);
+
 
             // Set up the crypto object for later. The object will be authenticated by use
             // of the fingerprint.

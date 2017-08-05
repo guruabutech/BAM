@@ -372,27 +372,23 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-       // Log.w(LOG_TAG, "CHILD ADDED");
         if (!dataSnapshot.getKey().equals("events")) {
             Event newEvent = dataSnapshot.getValue(Event.class);
             Event eventGeofences = new Event(newEvent.getLatitude(), newEvent.getLongitude(), newEvent.getRadius(), newEvent.getEventHours(), newEvent.getTimeStamp());
-            //  if(mGeofenceList != null || mGeofenceList.size() == 0){
-            //      mGeofenceList.clear();
-            //  }
+
             mGeofenceList.add(eventGeofences);
             if(mGeofenceList.size() >= mChildCount){
                 Log.v("ALL CHILDREN ADDED","ALL CHILDREN ADDED");
                 mGeofencing.updateGeofencesList(mGeofenceList);
                 mGeofencing.registerAllGeofences();
+                mGeofenceList.clear();
 
             }
             newEvent.setKey(dataSnapshot.getKey());
             if (savedDbQuery && newEvent.getPrivateEvent()) {
                 for (User user : newEvent.getPrivateInvites()) {
-                    // Log.w("COMPARE", mUserEmail + " "+ user.getEmailAddress()+" "+ mUserEmail.equals(user.getEmailAddress().toLowerCase()));
                     if (mUserEmail.equals(user.getEmailAddress().toLowerCase())) {
                         mEventAdapter.add(newEvent);
-
                     }
                 }
             } else {
@@ -408,7 +404,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 mEventListView.setEmptyView(mNoEvents);
             }
         }else{
-            Log.v("ChildCount", Long.toString(dataSnapshot.getChildrenCount()));
             mChildCount = dataSnapshot.getChildrenCount();
             queryPrivateEvents(savedDbQuery);
         }
@@ -416,14 +411,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-       // Log.w(LOG_TAG, "CHILD CHANGED");
         mEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-       // Log.w(LOG_TAG, "CHILD REMOVED");
-
         for (Event events : mEvents) {
             if (events.getKey().toString().equals(dataSnapshot.getKey().toString())) {
                 mEvents.remove(events);
@@ -441,8 +433,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-       // Log.w(LOG_TAG, "CHILD MOVED");
-
         mEventAdapter.notifyDataSetChanged();
     }
 
@@ -466,7 +456,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             return;
         } else {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-           // Log.v(LOG_TAG, "LOCATION FUSED");
         }
     }
 
@@ -476,14 +465,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        //Log.v(LOG_TAG, "PERMISSION RESULTS---");
 
         if (requestCode == REQUEST_LOCATION) {
             if (grantResults.length == 1
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // We can now safely use the API we requested access to
-               // Log.v(LOG_TAG, "PERMISSION GRANTED---");
-
                 LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                         .addLocationRequest(mLocationRequest);
                 PendingResult<LocationSettingsResult> result =
@@ -499,7 +485,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                             case LocationSettingsStatusCodes.SUCCESS:
                                 // All location settings are satisfied. The client can
                                 // initialize location requests here.
-                              //  Log.v("SUCCESS---SUCCESS", Integer.toString(mLocationStatus));
 
                                 break;
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -511,7 +496,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
                                     status.startResolutionForResult(EventsActivity.this, REQUEST_CHECK_SETTINGS);
                                     mLocationStatus = LocationSettingsStatusCodes.RESOLUTION_REQUIRED;
-                                   // Log.v("RESOLUTION REQUIRED", Integer.toString(mLocationStatus));
 
                                 } catch (IntentSender.SendIntentException e) {
                                     // Ignore the error.
@@ -520,7 +504,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                                 // Location settings are not satisfied. However, we have no way
                                 // to fix the settings so we won't show the dialog.g
-                               // Log.v("CHANGE UNAVAILABLE", Integer.toString(mLocationStatus));
                                 break;
                         }
                     }

@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-    //    Log.v("ON RESUME---","---ON RESUME");
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
         cardIn();
         super.onResume();
@@ -133,13 +132,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause(){
         super.onPause();
         cardOut();
-        //Log.v("ON PAUSE---","---ON PAUSE");
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
     @Override
     protected void onStop(){
         super.onStop();
-       // Log.v("ON STOP---","---ON STOP");
     }
 }
 
