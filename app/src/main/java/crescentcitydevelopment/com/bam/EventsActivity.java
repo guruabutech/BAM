@@ -117,7 +117,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 } else {
                     mUserName = user.getDisplayName();
                     mUserEmail = user.getEmail().toLowerCase();
-                    //Toast.makeText(EventsActivity.this, mUserEmail, Toast.LENGTH_SHORT).show();
                     mUserId = user.getUid();
 
                 }
@@ -177,7 +176,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                     configureLocation();
                     Snackbar.make(view, "Location Denied... Check Permissions", Snackbar.LENGTH_LONG).show();
                 }else{
-                   // Log.v("LOCATION STATUS---", Double.toString(mLat) + Double.toString(mLng));
                     Intent intent = new Intent(EventsActivity.this, AddEventActivity.class)
                             .putExtra("lat", Double.toString(mLat))
                             .putExtra("long", Double.toString(mLng))
@@ -189,7 +187,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             }
         });
         initialDbQuery();
-       // queryPrivateEvents(savedDbQuery);
     }
 
     @Override
@@ -305,16 +302,12 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             addresses = gcd.getFromLocation(lat, lng, 1);
             String address = addresses.get(0).getAddressLine(0);
             editedAddress = address.substring(address.indexOf(",")+1);
-           // Log.v("DEBUG GEO","---"+addresses.get(0).getAddressLine(0));
-            //Log.v("EDITED ADDRESS","---"+editedAddress);
 
         } catch (IOException e) {
             e.printStackTrace();
-       //     Log.v("GEOCODER ERROR","GEOCODER ERROR");
         }
         if (addresses.size() > 0)
         {
-       //     Log.v("LOCATION ADDRESS","ADD "+addresses.get(0).getAddressLine(1));
         }
         return editedAddress;
     }
@@ -322,30 +315,22 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onConnectionSuspended(int i) {
-     //   Log.v("CONNECTION SUSPENDED", "SUSPENDED");
 
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         showAlert();
-       // Log.v("CONNECTION FAILED", "FAILED");
-
     }
 
     @Override
     public void onLocationChanged(Location location) {
         if (progressBar.isShown() && mLocationStatus == 6) {
             progressBar.setVisibility(View.GONE);
-       //     Toast.makeText(this, "Location Configured", Toast.LENGTH_SHORT).show();
             mLocationStatus = 777;
-     //       Log.v(LOG_TAG, "LOCATION CHANGED---");
         }
         mLat = location.getLatitude();
         mLng = location.getLongitude();
-
-       // Log.v(LOG_TAG, "LOCATION CHANGED---");
-      //  Log.v(LOG_TAG, mLat+" "+mLng);
     }
 
     public void showAlert() {

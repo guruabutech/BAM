@@ -212,12 +212,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 showAlert("EVENT DURATION", "This event is "+mDuration+" hour(s) long.");
             }
         });
-
-      //  mGoogleApiClient = new GoogleApiClient.Builder(this)
-      //          .addApi(LocationServices.API)
-      //          .addConnectionCallbacks(this)
-      //          .addOnConnectionFailedListener(this)
-      //          .build();
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.eventDetailsMap);
         mapFragment.getMapAsync(this);
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events").child(mKey);
@@ -259,9 +253,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         } else {
             // Hide the purchase button which uses a non-invalidated key
             // if the app doesn't work on Android N preview
-           // purchaseButtonNotInvalidated.setVisibility(View.GONE);
-           // findViewById(R.id.purchase_button_not_invalidated_description)
-           //         .setVisibility(View.GONE);
+
         }
 
         if (!keyguardManager.isKeyguardSecure()) {
@@ -287,7 +279,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         }
         createKey(DEFAULT_KEY_NAME, true);
         createKey(KEY_NAME_NOT_INVALIDATED, false);
-        //purchaseButton.setEnabled(true);
 
             fab.setOnClickListener(
                     new AttendeeButtonListener(defaultCipher, DEFAULT_KEY_NAME));
@@ -300,7 +291,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
         LatLng location = new LatLng(eventLatitude, eventLongitude);
         mAddEventMap.addMarker(new MarkerOptions().position(location).title("Event"));
-        //LatLng friscoTx = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
         CameraPosition target = CameraPosition.builder().target(location).zoom(17).build();
         mAddEventMap.moveCamera(CameraUpdateFactory.newCameraPosition(target));
         mAddEventMap.addCircle(new CircleOptions()
@@ -400,8 +390,6 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             mAdminName  = dataSnapshot.child("userName").getValue().toString();
            mAdminEmail = dataSnapshot.child("emailAddress").getValue().toString();
         }
-
-
             if(dataSnapshot.getKey().equals("eventHours")){
             mDuration = dataSnapshot.getValue().toString();
         }
@@ -428,14 +416,11 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             for(int i = 0; i < dataSnapshot.getChildrenCount(); i++ )
             {
                 String inviteNumber = Integer.toString(i);
-              //  String inviteeName =dataSnapshot.child(inviteNumber).child("userName").getValue().toString();
                 String inviteeEmail =dataSnapshot.child(inviteNumber).child("emailAddress").getValue().toString();
-              //  String inviteeUserId =dataSnapshot.child(inviteNumber).child("userId").getValue().toString();
                 User invitees = new User("Invited User", inviteeEmail, "UserId");
                 mInvitedUsersList.add(invitees);
                 mInvitedUsersArray[i] = inviteeEmail;
             }
-          //  eventAttendeesView.setText(dataSnapshot.getChildrenCount()+" "+"Attendees");
         }
         if(isPresent(mCurrentUser) && !isAdmin(mAdminEmail.toLowerCase())){
             fab.setVisibility(View.INVISIBLE);
@@ -464,9 +449,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
             for(int i = 0; i < dataSnapshot.getChildrenCount(); i++ )
             {
                 String attendeeNumber = Integer.toString(i);
-                //String attendeeName =dataSnapshot.child(attendeeNumber).child("userName").getValue().toString();
                 String attendeeEmail =dataSnapshot.child(attendeeNumber).child("emailAddress").getValue().toString();
-                //String attendeeUserId =dataSnapshot.child(attendeeNumber).child("userId").getValue().toString();
                 mInvitedUsersArray[i] = attendeeEmail;
             }
 

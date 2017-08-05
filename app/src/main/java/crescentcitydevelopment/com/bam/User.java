@@ -12,7 +12,6 @@ public class User
     private String userName;
     private String emailAddress;
     private String userId;
- //   List<Event> eventsAttended;
 
     public User(){}
 
