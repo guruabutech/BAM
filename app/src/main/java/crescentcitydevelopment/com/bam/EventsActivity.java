@@ -103,7 +103,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mNoEvents = (TextView) findViewById(R.id.noEvents);
         mNoEvents.setVisibility(View.GONE);
-        mEventListView.setEmptyView(progressBar);
         mLocationStatus = 777;
         mEvents = new ArrayList<>();
         mEventAdapter = new EventAdapter(this, R.layout.event_list_item, mEvents);
@@ -357,6 +356,10 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            if(progressBar.isShown()) {
+                progressBar.setVisibility(View.GONE);
+            }
+
         if (!dataSnapshot.getKey().equals("events")) {
             Event newEvent = dataSnapshot.getValue(Event.class);
             Event eventGeofences = new Event(newEvent.getLatitude(), newEvent.getLongitude(), newEvent.getRadius(), newEvent.getEventHours(), newEvent.getTimeStamp());
@@ -371,6 +374,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             }
             newEvent.setKey(dataSnapshot.getKey());
             if (savedDbQuery && newEvent.getPrivateEvent()) {
+                progressBar.setVisibility(View.GONE);
+
                 for (User user : newEvent.getPrivateInvites()) {
                     if (mUserEmail.equals(user.getEmailAddress().toLowerCase())) {
                         mEventAdapter.add(newEvent);
@@ -378,16 +383,12 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                 }
             } else {
                 mEventAdapter.add(newEvent);
+                mEventListView.setEmptyView(mNoEvents);
+
             }
             attendeeCount = newEvent.getAttendees().size();
             progressBar.setVisibility(View.GONE);
-            if (mEventAdapter.getCount() == 0) {
-                progressBar.setVisibility(View.GONE);
-                if (savedDbQuery) {
-                    mNoEvents.setText("No Event Invites");
-                }
-                mEventListView.setEmptyView(mNoEvents);
-            }
+
         }else{
             mChildCount = dataSnapshot.getChildrenCount();
             queryPrivateEvents(savedDbQuery);
@@ -422,9 +423,11 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     }
 
     private void queryPrivateEvents(Boolean privateEvent){
+        mEvents.clear();
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
         Query eventPrivate = mEventDatabaseReference.orderByChild("privateEvent").equalTo(privateEvent);
         eventPrivate.addChildEventListener(this);
+
     }
 
     @Override
