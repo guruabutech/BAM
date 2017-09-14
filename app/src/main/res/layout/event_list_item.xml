@@ -3,14 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp">
-
-
-
+    android:orientation="vertical"
+    android:padding="10dp">
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
@@ -75,8 +69,4 @@
                 tools:text="MeetUp for Software Engineers"
                 />
         </LinearLayout>
-
-
-
-    </RelativeLayout>
 </LinearLayout>

@@ -11,8 +11,8 @@ import java.util.List;
 
 public class EventAdapter extends ArrayAdapter<Event> {
 
-    public EventAdapter(Context context, int resource, List<Event>objects){
-        super(context, resource, objects);
+    public EventAdapter(Context context, List<Event> objects){
+        super(context, R.layout.event_list_item, objects);
     }
 
     @Override

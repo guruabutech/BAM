@@ -1,13 +1,8 @@
 package crescentcitydevelopment.com.bam;
 
 
-import com.google.firebase.database.Exclude;
 
-import java.util.List;
-
-import static android.R.attr.key;
-
-public class User
+ class User
 {
     private String userName;
     private String emailAddress;

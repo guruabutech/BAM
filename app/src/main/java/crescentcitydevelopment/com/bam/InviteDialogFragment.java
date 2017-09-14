@@ -1,6 +1,5 @@
 package crescentcitydevelopment.com.bam;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -12,8 +11,8 @@ import android.view.LayoutInflater;
 public class InviteDialogFragment extends DialogFragment{
 
     public interface InviteDialogListener{
-        public void onDialogPositiveClick(DialogFragment dialog);
-        public void onDialogNegativeClick(DialogFragment dialog);
+        void onDialogPositiveClick(DialogFragment dialog);
+        void onDialogNegativeClick(DialogFragment dialog);
     }
 
     InviteDialogListener mListener;

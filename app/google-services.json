@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "778061781393-14c9hgrqkn1av91ctjnuhlmfvlpkpt9q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "crescentcitydevelopment.com.bam",
+            "certificate_hash": "18ee334e20eb276c3afd6d0bc3cb9f736a0944a6"
+          }
+        },
+        {
           "client_id": "778061781393-mev1gmv86sn1pg0h0atspvk93emep36t.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -29,7 +37,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBrL8CveUXvCl1rqzKZDJP1F7MuZxudQ3U"
+          "current_key": "AIzaSyAozG6R9yi2jVyrz3y6GFBDM18xR02EIZc"
         }
       ],
       "services": {

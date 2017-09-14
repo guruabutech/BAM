@@ -8,8 +8,8 @@
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="crescentcitydevelopment.com.bam.EventsActivity"
-    tools:showIn="@layout/activity_event">
-
+    tools:showIn="@layout/activity_event"
+    android:background="@color/colorPrimary">
    <ListView
        android:id="@+id/eventList"
        android:layout_width="match_parent"

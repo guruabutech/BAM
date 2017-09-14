@@ -24,7 +24,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,13 +52,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-import static android.webkit.ConsoleMessage.MessageLevel.LOG;
-
 
 public class EventsActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ChildEventListener {
-    private String savedQueryState = "savedDbQueryString";
-    private String savedUserEmailState = "savedUserEmail";
+    private final String savedQueryState = "savedDbQueryString";
+    private final String savedUserEmailState = "savedUserEmail";
     private String savedUserEmail;
     private Boolean savedDbQuery = false;
     private static final int REQUEST_CHECK_SETTINGS = 1;
@@ -70,21 +67,22 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     private ListView mEventListView;
     private TextView mNoEvents;
     private ProgressBar progressBar;
-    boolean mIsLargeLayout;
+    private boolean mIsLargeLayout;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private double mLat;
     private Geofencing mGeofencing;
-    Menu menu;
-    MenuItem publicMenuItem, privateMenuItem;
+    private Menu menu;
+    private MenuItem publicMenuItem;
+    private MenuItem privateMenuItem;
     private double mLng;
     private String mUserId;
-    List<Event> mEvents;
-    FirebaseAuth mFirebaseAuth;
-    FirebaseAuth.AuthStateListener mAuthStateListener;
+    private List<Event> mEvents;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
     private String mUserName;
     private String mUserEmail;
-    public static final int REQUEST_LOCATION = 99;
+    private static final int REQUEST_LOCATION = 99;
     private int attendeeCount;
     private ArrayList<Event> mGeofenceList;
     private long mChildCount;
@@ -105,7 +103,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mNoEvents.setVisibility(View.GONE);
         mLocationStatus = 777;
         mEvents = new ArrayList<>();
-        mEventAdapter = new EventAdapter(this, R.layout.event_list_item, mEvents);
+        mEventAdapter = new EventAdapter(this, mEvents);
         mFirebaseAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -150,8 +148,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
                         .putExtra("timeStamp", Long.toString(event.getTimeStamp()))
                         .putExtra("userName", mUserName)
                         .putExtra("userEmail", mUserEmail)
-                        .putExtra("userId", mUserId)
-                        .putExtra("eventName",event.getEventName());
+                        .putExtra("userId", mUserId);
                         startActivity(intent);
             }
         });
@@ -293,7 +290,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
 
     }
 
-    public String locationToAddress(double lat, double lng){
+    private String locationToAddress(double lat, double lng){
         Geocoder gcd = new Geocoder(getApplicationContext(), Locale.getDefault());
         List<Address> addresses = null;
         String editedAddress = null;
@@ -310,7 +307,6 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         }
         return editedAddress;
     }
-
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -332,7 +328,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mLng = location.getLongitude();
     }
 
-    public void showAlert() {
+    private void showAlert() {
         AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
         infoDialog.setMessage("Must enable location to continue.")
                 .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -409,7 +405,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             }
         }
         mEventAdapter.notifyDataSetChanged();
-        mEventAdapter = new EventAdapter(this, R.layout.event_list_item, mEvents);
+        mEventAdapter = new EventAdapter(this, mEvents);
         mEventListView.setAdapter(mEventAdapter);
         if (mEventAdapter.getCount() == 0) {
             progressBar.setVisibility(View.GONE);
@@ -435,7 +431,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mEventAdapter.notifyDataSetChanged();
     }
 
-    public void configureLocation(){
+    private void configureLocation(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             ActivityCompat.requestPermissions(this,

@@ -22,7 +22,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Slide;
 import android.transition.TransitionManager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,55 +66,39 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+
 public class EventDetailActivity extends AppCompatActivity implements OnMapReadyCallback, ChildEventListener, InviteDialogFragment.InviteDialogListener{
-    GoogleMap mAddEventMap;
-    boolean mapReady = false;
-    TextView eventDescriptionView;
-    TextView eventTitleView;
-    TextView eventDuration;
-    TextView eventAdminView;
-    TextView eventAttendeesView;
-    TextView eventLocationView;
-    private double eventLatitude;
-    private double eventLongitude;
-    private int attendeeCount;
+    private GoogleMap mAddEventMap;
+    private boolean mapReady = false;
+    private TextView eventAttendeesView;
+    private double eventLatitude, eventLongitude;
     private Boolean isAttendable;
-    private String eventKey;
+    private long eventLength;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEventDatabaseReference;
-    private String mKey;
-    private LinearLayout mAdminLayout;
-    private LinearLayout mAttendeeLayout;
-    private LinearLayout mLocationLayout;
-    private LinearLayout mDurationLayout;
-    private String mAdminName;
-    private String mAdminEmail;
-    private String mLocation;
-    private String mDuration;
-    private String mEventName;
+    private LinearLayout fabLayout;
     private String mUsername;
     private String mUserEmail;
     private String mUserId;
-    private String mEventDesc;
-    private List<User> mAttendeeList, mInvitedUsersList;
-    private String[] mAttendeeNameArray;
-    private String[] mInvitedUsersArray;
-    private FloatingActionButton fab;
-    private ImageView backIcon;
-    private ImageView deleteIcon;
-    private LinearLayout fabLayout;
-    private User mCurrentUser;
-    private Boolean eventIsPrivate;
+    private String mAdminName;
+    private String mAdminEmail;
+    private String mLocation;
     private String mTimeStamp;
-
-    //FINGERPRINT VARIABLES
-    private KeyGenerator mKeyGenerator;
+    private String mKey;
     static final String DEFAULT_KEY_NAME = "default_key";
-    private KeyStore mKeyStore;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String DIALOG_FRAGMENT_TAG = "myFragment";
     private static final String SECRET_MESSAGE = "Very secret message";
     private static final String KEY_NAME_NOT_INVALIDATED = "key_not_invalidated";
+    private List<User> mAttendeeList, mInvitedUsersList;
+    private String[] mAttendeeNameArray, mInvitedUsersArray;
+    private FloatingActionButton fab;
+    private ImageView deleteIcon;
+    private User mCurrentUser;
+    //FINGERPRINT VARIABLES
+    private KeyGenerator mKeyGenerator;
+    private KeyStore mKeyStore;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -124,18 +107,18 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String geofenceList = sharedPreferences.getString(getString(R.string.pref_geofence_entered), "none");
         fabLayout = (LinearLayout) findViewById(R.id.fabLayout);
-        backIcon = (ImageView) findViewById(R.id.backArrowIcon);
+        ImageView backIcon = (ImageView) findViewById(R.id.backArrowIcon);
         deleteIcon = (ImageView) findViewById(R.id.deleteIcon);
-        eventDescriptionView = (TextView) findViewById(R.id.detailEventDescription);
-        eventAdminView = (TextView) findViewById(R.id.detailEventAdmin);
-        eventTitleView = (TextView) findViewById(R.id.detailEventTitle);
-        eventLocationView = (TextView) findViewById(R.id.detailEventLocation);
-        eventDuration = (TextView) findViewById(R.id.detailEventDuration);
+        TextView eventDescriptionView = (TextView) findViewById(R.id.detailEventDescription);
+        TextView eventAdminView = (TextView) findViewById(R.id.detailEventAdmin);
+        TextView eventTitleView = (TextView) findViewById(R.id.detailEventTitle);
+        TextView eventLocationView = (TextView) findViewById(R.id.detailEventLocation);
+        TextView eventDuration = (TextView) findViewById(R.id.detailEventDuration);
         eventAttendeesView = (TextView) findViewById(R.id.detailEventAttendees);
-        mAdminLayout = (LinearLayout) findViewById(R.id.adminLayout);
-        mAttendeeLayout = (LinearLayout) findViewById(R.id.attendeeLayout);
-        mLocationLayout = (LinearLayout) findViewById(R.id.locationLayout);
-        mDurationLayout = (LinearLayout) findViewById(R.id.durationLayout);
+        LinearLayout mAdminLayout = (LinearLayout) findViewById(R.id.adminLayout);
+        LinearLayout mAttendeeLayout = (LinearLayout) findViewById(R.id.attendeeLayout);
+        LinearLayout mLocationLayout = (LinearLayout) findViewById(R.id.locationLayout);
+        LinearLayout mDurationLayout = (LinearLayout) findViewById(R.id.durationLayout);
 
         fab = (FloatingActionButton) findViewById(R.id.addAttendee);
         Intent intent = getIntent();
@@ -145,21 +128,20 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         mInvitedUsersList = new ArrayList<>();
         if(bd != null) {
             mKey = (String) bd.get("key");
-            long duration = (long) bd.get("duration");
-            String hours = Long.toString(TimeUnit.MILLISECONDS.toHours(duration))+" Hours";
+             eventLength = (long) bd.get("duration");
+            String hours = Long.toString(TimeUnit.MILLISECONDS.toHours(eventLength))+" Hours";
             String title = (String) bd.get("title");
             mUsername = (String) bd.get("userName");
             mUserEmail = (String) bd.get("userEmail");
             mUserId = (String) bd.get("userId");
             mTimeStamp = (String) bd.get("timeStamp");
-            mEventDesc = (String) bd.get("desc");
+            String mEventDesc = (String) bd.get("desc");
             String admin = (String) bd.get("admin");
             mLocation = (String) bd.get("eventAddress");
-            attendeeCount = (int) bd.get("attendeeCount");
-            eventKey = (String) bd.get("key");
+            int attendeeCount = (int) bd.get("attendeeCount");
             eventLatitude = (Double) bd.get("eventLatitude");
             eventLongitude = (Double) bd.get("eventLongitude");
-            mEventName = (String) bd.get("eventName");
+            String mEventName = (String) bd.get("eventName");
             eventTitleView.setText(title);
             eventDescriptionView.setText(mEventDesc);
             eventDuration.setText(hours);
@@ -209,7 +191,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         mDurationLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAlert("EVENT DURATION", "This event is "+mDuration+" hour(s) long.");
+                showAlert("EVENT DURATION", "This event is "+Long.toString(TimeUnit.MILLISECONDS.toHours(eventLength))+" hour(s) long.");
             }
         });
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.eventDetailsMap);
@@ -321,7 +303,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
         }
         return super.onOptionsItemSelected(item);
     }
-    public void showAlert(String heading, String title) {
+    private void showAlert(String heading, String title) {
         AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
         infoDialog.setMessage(title)
                 .setPositiveButton("DISMISS", new DialogInterface.OnClickListener() {
@@ -333,7 +315,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 .create();
         infoDialog.show();
     }
-    public Dialog showAttendeesDialog() {
+    private Dialog showAttendeesDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("EVENT ATTENDEES")
@@ -351,7 +333,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 });
         return builder.show();
     }
-    public Dialog showInvitedUsersDialog() {
+    private Dialog showInvitedUsersDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("INVITE USERS")
@@ -377,7 +359,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
                 });
         return builder.show();
     }
-    public void rotateVector(){
+    private void rotateVector(){
         AnimatedVectorDrawable crossToTick = (AnimatedVectorDrawable) getDrawable(R.drawable.avd_attend_to_attendee);
         fab.setImageDrawable(crossToTick);
         crossToTick.start();
@@ -391,7 +373,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
            mAdminEmail = dataSnapshot.child("emailAddress").getValue().toString();
         }
             if(dataSnapshot.getKey().equals("eventHours")){
-            mDuration = dataSnapshot.getValue().toString();
+                String mDuration = dataSnapshot.getValue().toString();
         }
         if(dataSnapshot.getKey().equals("attendees")){
             Long.toString(dataSnapshot.getChildrenCount());
@@ -486,7 +468,7 @@ public class EventDetailActivity extends AppCompatActivity implements OnMapReady
 
            return adminEmail.equals(mUserEmail);
     }
-    public void fabOut(){
+    private void fabOut(){
         new CountDownTimer(300, 1000){
 
             public void onTick(long millisUntilFinished){

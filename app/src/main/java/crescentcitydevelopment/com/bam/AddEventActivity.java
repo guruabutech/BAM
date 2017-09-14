@@ -12,10 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,8 +28,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
@@ -50,12 +45,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static crescentcitydevelopment.com.bam.R.id.fabLayout;
 
 
 public class AddEventActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, View.OnClickListener, ChildEventListener {
@@ -65,25 +58,21 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEventDatabaseReference;
     private String lat, lng, mUsername, mUserEmail, mUserId;
-    private Menu menu;
     private MenuItem invite;
     private EditText eventName, eventDesc;
     private long mSelectedHours;
-    private LatLng mPlacePickerLatLng, pickerCurrentLocation;
+    private LatLng mPlacePickerLatLng;
     private float mSelectedRadius= 50;
-    private Spinner eventTimeSpinner, eventRadiusSpinner;
     private TextView mAddEventLocationView;
     private GoogleMap mAddEventMap;
-    boolean mapReady = false;
     private GoogleApiClient mGoogleApiClient;
     private Geofencing mGeofencing;
     private double mLat, mLng;
     private boolean privateEvent = false;
-    private LinearLayout locationLayout;
     private List<User> mPrivateInvites;
     private ArrayList<Event> mEvents;
 
-    int PLACE_PICKER_REQUEST = 1;
+    private int PLACE_PICKER_REQUEST = 1;
     private long eventCount = 0;
 
     @Override
@@ -91,7 +80,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_container);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
+        LinearLayout locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
         mPrivateInvites = new ArrayList<>();
         mEvents = new ArrayList<>();
         setSupportActionBar(toolbar);
@@ -123,8 +112,8 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mEventDatabaseReference = mFirebaseDatabase.getReference();
         mEventDatabaseReference.addChildEventListener(this);
-        eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
-        eventRadiusSpinner = (Spinner) findViewById(R.id.eventRadiusSpinner);
+        Spinner eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
+        Spinner eventRadiusSpinner = (Spinner) findViewById(R.id.eventRadiusSpinner);
         ArrayAdapter<CharSequence> durationSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.time_array, R.layout.spinner_item);
         eventTimeSpinner.setAdapter(durationSpinnerAdapter);
         ArrayAdapter<CharSequence> radiusSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.radius_array, R.layout.spinner_item);
@@ -188,7 +177,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
         secondQuery();
     }
 
-    public void showAlert() {
+    private void showAlert() {
         AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
         infoDialog.setMessage("Are you sure? This event will not be saved.")
                 .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -233,7 +222,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                 mAddEventMap.clear();
                 placeAddress = place.getAddress().toString();
                 mAddEventLocationView.setText(placeAddress);
-                pickerCurrentLocation = place.getLatLng();
+                LatLng pickerCurrentLocation = place.getLatLng();
                 mLat = pickerCurrentLocation.latitude;
                 mLng = pickerCurrentLocation.longitude;
                 mPlacePickerLatLng = place.getLatLng();
@@ -255,7 +244,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.event_menu, menu);
-        this.menu = menu;
+        Menu menu1 = menu;
         invite = menu.findItem(R.id.action_private);
 
         return true;
@@ -325,7 +314,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mapReady = true;
+        boolean mapReady = true;
         mAddEventMap = googleMap;
         LatLng location = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
         mPlacePickerLatLng = location;
@@ -381,7 +370,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
     }
 
-    public void updateMap(){
+    private void updateMap(){
         mAddEventMap.clear();
         mAddEventMap.addMarker(new MarkerOptions().position(mPlacePickerLatLng).title("Event"));
         CameraPosition target = CameraPosition.builder().target(mPlacePickerLatLng).zoom(17).build();
@@ -446,7 +435,7 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     public void onCancelled(DatabaseError databaseError) {
 
     }
-    public void query(){
+    private void query(){
 
         mEventDatabaseReference = mFirebaseDatabase.getReference().child("events");
                 mEventDatabaseReference.addChildEventListener(this);

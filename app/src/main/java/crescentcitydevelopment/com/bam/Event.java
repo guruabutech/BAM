@@ -3,8 +3,6 @@ package crescentcitydevelopment.com.bam;
 
 import com.google.firebase.database.Exclude;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Event  {
@@ -37,7 +35,7 @@ public class Event  {
         this.privateInvites = privateInvites;
         this.timeStamp = timeStamp;
     }
-   public Event(String eName, String eDiscription, double elatitude, double longitude, long hours){
+    public Event(String eName, String eDiscription, double elatitude, double longitude, long hours){
         this.eventName = eName;
         this.eventDescription = eDiscription;
         this.latitude = elatitude;
@@ -77,6 +75,7 @@ public class Event  {
     public String getEventDescription() {
         return eventDescription;
     }
+
     public void setKey(String key){
         this.key = key;
     }
