@@ -28,52 +28,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     private SignInButton signInButton;
     private CardView cardView;
+    private TextView logo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initViews();
+        configureFirebase();
 
-        String mUserName = ANONYMOUS;
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        signInButton = (SignInButton) findViewById(R.id.signInButton);
-        signInButton.setColorScheme(SignInButton.COLOR_DARK);
-        signInButton.setSize(SignInButton.SIZE_WIDE);
-        cardView = (CardView) findViewById(R.id.signInCard);
-        cardView.setVisibility(View.INVISIBLE);
-        TextView logo = (TextView) findViewById(R.id.logoScript);
-        script = Typeface.createFromAsset(this.getAssets(), "Tangerine_Bold.ttf");
-        logo.setTypeface(script);
-        logo.setText("Biometric Attendance Manager");
-
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if(user != null){
-                    Intent intent = new Intent(MainActivity.this, EventsActivity.class);
-                    startActivity(intent);
-                }
-            }
-        };
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if(user != null){
-                            //user signed in
-                        }else{
-                            //user signed out
-                            startActivity(
-                                    AuthUI.getInstance()
-                                            .createSignInIntentBuilder()
-                                            .setIsSmartLockEnabled(false)
-                                            .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                            .build());
-                        }
-                }
-        });
     }
 
     @Override
@@ -112,7 +75,50 @@ public class MainActivity extends AppCompatActivity {
         }
         .start();
     }
+    private void initViews(){
+        signInButton = (SignInButton) findViewById(R.id.signInButton);
+        cardView = (CardView) findViewById(R.id.signInCard);
+        cardView.setVisibility(View.INVISIBLE);
+        logo = (TextView) findViewById(R.id.logoScript);
+        script = Typeface.createFromAsset(this.getAssets(), "Tangerine_Bold.ttf");
+        logo.setTypeface(script);
+        logo.setText("Biometric Attendance Manager");
+        signInButton.setColorScheme(SignInButton.COLOR_DARK);
+        signInButton.setSize(SignInButton.SIZE_WIDE);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if(user != null){
+                    //user signed in
+                }else{
+                    //user signed out
+                    startActivity(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
+                                    .build());
+                }
+            }
+        });
+
+    }
+    private void configureFirebase(){
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if(user != null){
+                    Intent intent = new Intent(MainActivity.this, EventsActivity.class);
+                    startActivity(intent);
+                }
+            }
+        };
+    }
     private void cardOut(){
         Slide slide = new Slide(Gravity.BOTTOM);
         TransitionManager.beginDelayedTransition(cardView, slide);

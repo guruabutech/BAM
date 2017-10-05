@@ -91,34 +91,12 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_event);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        initViews();
         mGeofenceList = new ArrayList<>();
-        mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
-        mEventListView = (ListView) findViewById(R.id.eventList);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        mNoEvents = (TextView) findViewById(R.id.noEvents);
-        mNoEvents.setVisibility(View.GONE);
         mLocationStatus = 777;
         mEvents = new ArrayList<>();
         mEventAdapter = new EventAdapter(this, mEvents);
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user == null) {
-                    finish();
-                } else {
-                    mUserName = user.getDisplayName();
-                    mUserEmail = user.getEmail().toLowerCase();
-                    mUserId = user.getUid();
-
-                }
-            }
-        };
+        configureFirebase();
         if(savedInstanceState != null){
             if(savedInstanceState.containsKey(savedQueryState)){
                 savedDbQuery = savedInstanceState.getBoolean(savedQueryState);
@@ -133,23 +111,8 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Event event = mEventAdapter.getItem(i);
-                String location;
-                location = locationToAddress(event.getLatitude(),event.getLongitude());
-                Intent intent = new Intent(EventsActivity.this, EventDetailActivity.class)
-                        .putExtra("title", event.getEventName())
-                        .putExtra("desc", event.getEventDescription())
-                        .putExtra("duration", event.getEventHours())
-                        .putExtra("key", event.getKey().toString())
-                        .putExtra("admin", event.getAdmin().getUserName())
-                        .putExtra("attendeeCount", attendeeCount)
-                        .putExtra("eventAddress", location)
-                        .putExtra("eventLatitude", event.getLatitude())
-                        .putExtra("eventLongitude", event.getLongitude())
-                        .putExtra("timeStamp", Long.toString(event.getTimeStamp()))
-                        .putExtra("userName", mUserName)
-                        .putExtra("userEmail", mUserEmail)
-                        .putExtra("userId", mUserId);
-                        startActivity(intent);
+                String location = locationToAddress(event.getLatitude(),event.getLongitude());
+                launchEventDetailsActivity(event, location);
             }
         });
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -160,28 +123,7 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         mGeofencing = new Geofencing(this, mGoogleApiClient);
 
 
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                if (progressBar.isShown() && mLocationStatus == 6) {
-                    Snackbar.make(view, "Configuring Location", Snackbar.LENGTH_LONG).show();
-                } else if(mLat == 0 || mLng == 0) {
-                    configureLocation();
-                    Snackbar.make(view, "Location Denied... Check Permissions", Snackbar.LENGTH_LONG).show();
-                }else{
-                    Intent intent = new Intent(EventsActivity.this, AddEventActivity.class)
-                            .putExtra("lat", Double.toString(mLat))
-                            .putExtra("long", Double.toString(mLng))
-                            .putExtra("userName", mUserName)
-                            .putExtra("userEmail", mUserEmail)
-                            .putExtra("userId", mUserId);
-                            startActivity(intent);
-                }
-            }
-        });
+        configureFAB();
         initialDbQuery();
     }
 
@@ -443,9 +385,90 @@ public class EventsActivity extends AppCompatActivity implements GoogleApiClient
         }
     }
 
+    private void initViews(){
+        setContentView(R.layout.activity_event);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        mIsLargeLayout = getResources().getBoolean(R.bool.large_layout);
+        mEventListView = (ListView) findViewById(R.id.eventList);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mNoEvents = (TextView) findViewById(R.id.noEvents);
+        mNoEvents.setVisibility(View.GONE);
+
+    }
+    private void configureFirebase(){
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    finish();
+                } else {
+                    mUserName = user.getDisplayName();
+                    mUserEmail = user.getEmail().toLowerCase();
+                    mUserId = user.getUid();
+
+                }
+            }
+        };
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+
+    }
+
+    private void configureFAB(){
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                if (progressBar.isShown() && mLocationStatus == 6) {
+                    Snackbar.make(view, "Configuring Location", Snackbar.LENGTH_LONG).show();
+                } else if(mLat == 0 || mLng == 0) {
+                    configureLocation();
+                    Snackbar.make(view, "Location Denied... Check Permissions", Snackbar.LENGTH_LONG).show();
+                }else{
+                    launchAddEventActivity();
+                }
+            }
+        });
+    }
+    private void launchAddEventActivity(){
+        Intent intent = new Intent(EventsActivity.this, AddEventActivity.class)
+                .putExtra("lat", Double.toString(mLat))
+                .putExtra("long", Double.toString(mLng))
+                .putExtra("userName", mUserName)
+                .putExtra("userEmail", mUserEmail)
+                .putExtra("userId", mUserId);
+        startActivity(intent);
+    }
+
+    private void launchEventDetailsActivity(Event event, String location){
+        Intent intent = new Intent(EventsActivity.this, EventDetailActivity.class)
+                .putExtra("title", event.getEventName())
+                .putExtra("desc", event.getEventDescription())
+                .putExtra("duration", event.getEventHours())
+                .putExtra("key", event.getKey().toString())
+                .putExtra("admin", event.getAdmin().getUserName())
+                .putExtra("attendeeCount", attendeeCount)
+                .putExtra("eventAddress", location)
+                .putExtra("eventLatitude", event.getLatitude())
+                .putExtra("eventLongitude", event.getLongitude())
+                .putExtra("timeStamp", Long.toString(event.getTimeStamp()))
+                .putExtra("userName", mUserName)
+                .putExtra("userEmail", mUserEmail)
+                .putExtra("userId", mUserId);
+        startActivity(intent);
+    }
+
+
     private void initialDbQuery(){
         mEventDatabaseReference = mFirebaseDatabase.getReference();
         mEventDatabaseReference.addChildEventListener(this);
+    }
+
+    private void populateListView(){
+
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

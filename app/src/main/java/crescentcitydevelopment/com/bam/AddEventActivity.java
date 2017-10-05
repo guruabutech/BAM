@@ -71,19 +71,20 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
     private boolean privateEvent = false;
     private List<User> mPrivateInvites;
     private ArrayList<Event> mEvents;
-
+    private LinearLayout locationLayout;
+    private MapFragment mapFragment;
     private int PLACE_PICKER_REQUEST = 1;
     private long eventCount = 0;
+    private Spinner eventTimeSpinner;
+    private Spinner eventRadiusSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_container);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        LinearLayout locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
+        initViews();
         mPrivateInvites = new ArrayList<>();
         mEvents = new ArrayList<>();
-        setSupportActionBar(toolbar);
         Intent intent = getIntent();
         Bundle bd = intent.getExtras();
         hasEventCount = false;
@@ -99,7 +100,6 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
 
         mLat = Double.parseDouble(lat);
         mLng = Double.parseDouble(lng);
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -107,75 +107,11 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
                 .addOnConnectionFailedListener(this)
                 .build();
         mGeofencing = new Geofencing(this, mGoogleApiClient);
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.eventMap);
-        mapFragment.getMapAsync(this);
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mEventDatabaseReference = mFirebaseDatabase.getReference();
-        mEventDatabaseReference.addChildEventListener(this);
-        Spinner eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
-        Spinner eventRadiusSpinner = (Spinner) findViewById(R.id.eventRadiusSpinner);
-        ArrayAdapter<CharSequence> durationSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.time_array, R.layout.spinner_item);
-        eventTimeSpinner.setAdapter(durationSpinnerAdapter);
-        ArrayAdapter<CharSequence> radiusSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.radius_array, R.layout.spinner_item);
-        eventRadiusSpinner.setAdapter(radiusSpinnerAdapter);
-        locationLayout.setOnClickListener(this);
-        eventTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                mSelectedHours = adapterView.getSelectedItemPosition() + 1;
-                mSelectedHours = mSelectedHours * 60 * 60 * 1000;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                mSelectedHours =  60 * 60 * 1000;
-            }
-        });
-        eventRadiusSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                int selection;
-                selection = adapterView.getSelectedItemPosition() ;
-                switch(selection){
-                    case 1:
-                        mSelectedRadius = 10;
-                        updateMap();
-                        break;
-                    case 2:
-                        mSelectedRadius = 15;
-                        updateMap();
-                        break;
-                    case 3:
-                        mSelectedRadius = 20;
-                        updateMap();
-                        break;
-                    case 4:
-                        mSelectedRadius = 40;
-                        updateMap();
-                        break;
-                    case 5:
-                        mSelectedRadius = 50;
-                        updateMap();
-                        break;
-                    default:
-                        mSelectedRadius = 50;
-                        break;
-                }
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                    mSelectedRadius = 7;
-            }
-        });
-
-        eventName = (EditText) findViewById(R.id.eventNameField);
-        eventDesc = (EditText) findViewById(R.id.eventDescriptionField);
-        eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
-        mAddEventLocationView = (TextView) findViewById(R.id.addEventLocation);
+        configureFirebase();
         secondQuery();
     }
+
+
 
     private void showAlert() {
         AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
@@ -414,6 +350,81 @@ public class AddEventActivity extends AppCompatActivity implements OnMapReadyCal
             }
         }
 
+    }
+
+    private void initViews(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        locationLayout = (LinearLayout) findViewById(R.id.locationLinearLayout);
+        setSupportActionBar(toolbar);
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.eventMap);
+        mapFragment.getMapAsync(this);
+        eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
+        eventRadiusSpinner = (Spinner) findViewById(R.id.eventRadiusSpinner);
+        ArrayAdapter<CharSequence> durationSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.time_array, R.layout.spinner_item);
+        eventTimeSpinner.setAdapter(durationSpinnerAdapter);
+        ArrayAdapter<CharSequence> radiusSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.radius_array, R.layout.spinner_item);
+        eventRadiusSpinner.setAdapter(radiusSpinnerAdapter);
+        locationLayout.setOnClickListener(this);
+        eventTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                mSelectedHours = adapterView.getSelectedItemPosition() + 1;
+                mSelectedHours = mSelectedHours * 60 * 60 * 1000;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                mSelectedHours =  60 * 60 * 1000;
+            }
+        });
+        eventRadiusSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                int selection;
+                selection = adapterView.getSelectedItemPosition() ;
+                switch(selection){
+                    case 1:
+                        mSelectedRadius = 10;
+                        updateMap();
+                        break;
+                    case 2:
+                        mSelectedRadius = 15;
+                        updateMap();
+                        break;
+                    case 3:
+                        mSelectedRadius = 20;
+                        updateMap();
+                        break;
+                    case 4:
+                        mSelectedRadius = 40;
+                        updateMap();
+                        break;
+                    case 5:
+                        mSelectedRadius = 50;
+                        updateMap();
+                        break;
+                    default:
+                        mSelectedRadius = 50;
+                        break;
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                mSelectedRadius = 7;
+            }
+        });
+        eventName = (EditText) findViewById(R.id.eventNameField);
+        eventDesc = (EditText) findViewById(R.id.eventDescriptionField);
+        eventTimeSpinner = (Spinner) findViewById(R.id.eventLengthSpinner);
+        mAddEventLocationView = (TextView) findViewById(R.id.addEventLocation);
+    }
+
+    private void configureFirebase(){
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mEventDatabaseReference = mFirebaseDatabase.getReference();
+        mEventDatabaseReference.addChildEventListener(this);
     }
 
     @Override
